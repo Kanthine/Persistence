@@ -97,7 +97,6 @@ NSString *groupSqliteFile(void){
             [database executeUpdate:creatSql];
         }
     }];
-    
 }
 
 + (void)databaseChildThreadInTransaction:(void (^)(FMDatabase *database, BOOL *rollback))block{
@@ -122,15 +121,32 @@ NSString *groupSqliteFile(void){
 
 /** 退出登录，移除缓存数据
  */
-+ (void)removeCacheData{
++ (void)clearSqlite{
     //如果还有针对数据库的操作，则全部取消
     if ([self shareThreadQueue].operationCount > 0){
         [[self shareThreadQueue] cancelAllOperations];
     }
     
-    [[self shareThreadQueue] addOperationWithBlock:^{
-        [ProvincesModel dropTable];
-        [PhoneCodeModel dropTable];
+    [DatabaseManagement databaseChildThreadInTransaction:^(FMDatabase *database, BOOL *rollback) {
+        [database interrupt];//中断数据库操作
+        
+        NSMutableDictionary *muDict = [NSMutableDictionary dictionary];
+        
+        FMResultSet *resultSet = database.getSchema;
+        while ([resultSet next]){
+            NSString *tbl_name = [resultSet stringForColumn:@"tbl_name"];
+            NSString *sql = [resultSet stringForColumn:@"sql"];
+            if (tbl_name && sql) {
+                [muDict setObject:sql forKey:tbl_name];
+            }
+        }
+        [resultSet close];
+        
+        [muDict enumerateKeysAndObjectsUsingBlock:^(NSString*  _Nonnull tbl_name, NSString*  _Nonnull sql, BOOL * _Nonnull stop) {
+            NSString *dropSql = [NSString stringWithFormat:@"DROP TABLE IF EXISTS %@",tbl_name];
+            [database executeUpdate:dropSql];
+            [database executeUpdate:sql];
+        }];
     }];
 }
 
@@ -143,21 +159,22 @@ NSString *groupSqliteFile(void){
 
     [DatabaseManagement.databaseQueue inTransaction:^(FMDatabase *db, BOOL *rollback) {
         
+        
+        NSLog(@"lastInsertRowId -- %d",db.lastInsertRowId);
+        NSLog(@"changes -- %d",db.changes);
+
+        NSLog(@"goodConnection -- %d",db.goodConnection);
+
+        NSLog(@"cachedStatements ---- %@",db.cachedStatements);
+        
         NSLog(@"userVersion ---- %u",db.userVersion);
         NSLog(@"applicationID -- %d",db.applicationID);
         
-        FMResultSet *resultSet = db.getSchema;
-        while ([resultSet next]){
-            NSLog(@"getSchema ------ %@",resultSet.resultDictionary);
-        }
-        [resultSet close];
-        
-        
-        resultSet = [db getTableSchema:@"PhoneCodeModel"];
-        while ([resultSet next]){
-            NSLog(@"getSchema ====== %@",resultSet.resultDictionary);
-        }
-        [resultSet close];
+//        resultSet = [db getTableSchema:@"PhoneCodeModel"];
+//        while ([resultSet next]){
+//            NSLog(@"getSchema ====== %@",resultSet.resultDictionary);
+//        }
+//        [resultSet close];
     }];
 }
 

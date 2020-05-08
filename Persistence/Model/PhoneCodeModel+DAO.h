@@ -22,9 +22,17 @@ NS_ASSUME_NONNULL_BEGIN
  */
 + (void)dropTable;
 
+/** 根据唯一键查询唯一值
+ */
++ (void)getNameWithPhoneCode:(NSString *)value completionBlock:(void(^)(NSString *name))block;
+
 /** 根据某个表头获取表中数据
  */
 + (void)getModelWithKey:(NSString *)key value:(NSString *)value completionBlock:(void(^)(NSArray<PhoneCodeModel *> *models))block;
+
+/** 根据所有数据
+ */
++ (void)getAllDatas:(void(^)(NSArray<PhoneCodeModel *> *models))block;
 
 /** 插入
  */

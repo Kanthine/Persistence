@@ -23,12 +23,46 @@
     [DatabaseManagement emptyTableWithName:@"PhoneCodeModel"];
 }
 
++ (void)getNameWithPhoneCode:(NSString *)value completionBlock:(void(^)(NSString *name))block{
+    [DatabaseManagement databaseChildThreadInTransaction:^(FMDatabase * _Nonnull database, BOOL * _Nonnull rollback) {
+        NSString *string = [database stringForQuery:@"SELECT countryChinese FROM PhoneCodeModel WHERE phoneCode = ?",value];
+        dispatch_async(dispatch_get_main_queue(), ^{
+             block(string);
+         });
+    }];
+}
+
 + (void)getModelWithKey:(NSString *)key value:(NSString *)value completionBlock:(void(^)(NSArray<PhoneCodeModel *> *models))block{
     [DatabaseManagement databaseChildThreadInTransaction:^(FMDatabase *database, BOOL *rollback) {
         
         NSMutableArray *array = [NSMutableArray array];
         
         FMResultSet *resultSet = [database executeQuery:@"SELECT * FROM PhoneCodeModel WHERE ? = ?",key,value];
+        while ([resultSet next]){
+            PhoneCodeModel *model = [[PhoneCodeModel alloc] init];
+            model.countryCode = [resultSet stringForColumn:@"countryCode"];
+            model.countryPinYin = [resultSet stringForColumn:@"countryPinYin"];
+            model.countryEnglish = [resultSet stringForColumn:@"countryEnglish"];
+            model.phoneCode = [resultSet stringForColumn:@"phoneCode"];
+            model.countryChinese = [resultSet stringForColumn:@"countryChinese"];
+            [array addObject:model];
+        }
+        [resultSet close];
+        
+       dispatch_async(dispatch_get_main_queue(), ^{
+            block(array);
+        });
+    }];
+}
+
+/** 根据所有数据
+ */
++ (void)getAllDatas:(void(^)(NSArray<PhoneCodeModel *> *models))block{
+    
+    [DatabaseManagement databaseChildThreadInTransaction:^(FMDatabase *database, BOOL *rollback) {
+        NSMutableArray *array = [NSMutableArray array];
+        
+        FMResultSet *resultSet = [database executeQuery:@"SELECT * FROM PhoneCodeModel"];
         while ([resultSet next]){
             PhoneCodeModel *model = [[PhoneCodeModel alloc] init];
             model.countryCode = [resultSet stringForColumn:@"countryCode"];

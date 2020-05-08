@@ -8,8 +8,10 @@
 #import <sqlite3.h>
 #endif
 
-@interface FMDatabase () {
-    void*               _db;
+@interface FMDatabase ()
+
+{
+    void*               _db;//打开的SQLite数据库
     BOOL                _isExecutingStatement;
     NSTimeInterval      _startBusyRetryTime;
     
@@ -30,15 +32,14 @@ NS_ASSUME_NONNULL_END
 
 @implementation FMDatabase
 
-// Because these two properties have all of their accessor methods implemented,
-// we have to synthesize them to get the corresponding ivars. The rest of the
-// properties have their ivars synthesized automatically for us.
-
 @synthesize shouldCacheStatements = _shouldCacheStatements;
 @synthesize maxBusyRetryTimeInterval = _maxBusyRetryTimeInterval;
 
-#pragma mark FMDatabase instantiation and deallocation
+#pragma mark FMDatabase 实例化、释放
 
+// FMDBReturnAutoReleased() 是为了兼容MRC和ARC
+//FMDatabase 实例化 本质上只是给了数据库一个名字，并没有真实创建或者获取数据库。
+// -open 方法才是真正获取到数据库，其本质调用SQLite的 sqlite3_open() 函数
 + (instancetype)databaseWithPath:(NSString *)aPath {
     return FMDBReturnAutoreleased([[self alloc] initWithPath:aPath]);
 }
@@ -56,11 +57,8 @@ NS_ASSUME_NONNULL_END
 }
 
 - (instancetype)initWithPath:(NSString *)path {
-    
     assert(sqlite3_threadsafe()); // whoa there big boy- gotta make sure sqlite it happy with what we're going to do.
-    
     self = [super init];
-    
     if (self) {
         _databasePath               = [path copy];
         _openResultSets             = [[NSMutableSet alloc] init];
@@ -70,7 +68,6 @@ NS_ASSUME_NONNULL_END
         _maxBusyRetryTimeInterval   = 2;
         _isOpen                     = NO;
     }
-    
     return self;
 }
 
@@ -114,22 +111,18 @@ NS_ASSUME_NONNULL_END
     
     dispatch_once(&once, ^{
         NSString *prodVersion = [self FMDBUserVersion];
-        
         if ([[prodVersion componentsSeparatedByString:@"."] count] < 3) {
             prodVersion = [prodVersion stringByAppendingString:@".0"];
         }
-        
         NSString *junk = [prodVersion stringByReplacingOccurrencesOfString:@"." withString:@""];
-        
         char *e = nil;
         FMDBVersionVal = (int) strtoul([junk UTF8String], &e, 16);
-        
     });
     
     return FMDBVersionVal;
 }
 
-#pragma mark SQLite information
+/**************  SQLite information  **************/
 
 + (NSString*)sqliteLibVersion {
     return [NSString stringWithFormat:@"%s", sqlite3_libversion()];
@@ -144,32 +137,39 @@ NS_ASSUME_NONNULL_END
     return _db;
 }
 
+/** 如果 filename 参数是 NULL 或 ':memory:'，那么 sqlite3_open() 将会在 RAM 中创建一个内存数据库，这只会在 session 的有效时间内持续。
+ */
 - (const char*)sqlitePath {
-    
     if (!_databasePath) {
-        return ":memory:";
+        return ":memory:";// sqlite3_open() 将会在 RAM 中创建一个内存数据库,这只会在 session 的有效时间内持续。
     }
-    
     if ([_databasePath length] == 0) {
-        return ""; // this creates a temporary database (it's an sqlite thing).
+        return ""; //这会在 tmp 创建一个数据库
     }
-    
     return [_databasePath fileSystemRepresentation];
-    
 }
 
-#pragma mark Open and close database
-// 对 SQLite 中 sqlite3_open() 函数的封装使用
+#pragma mark 打开、关闭 数据库
+
+/** 打开一个指向 SQLite 数据库文件的连接，返回一个用于其他 SQLite 程序的数据库连接对象
+param filename UTF-8编码的数据库名称
+param ppDb 数据库
+int sqlite3_open(const char *filename,sqlite3 **ppDb);
+ */
+
+/** 打开数据库打开 : 对 SQLite 中 sqlite3_open() 函数的封装使用
+ * 数据库打开后根据 _maxBusyRetryTimeInterval 将数据库线程停顿一段时间，然后继续向下执行
+ */
 - (BOOL)open {
     if (_isOpen) {
         return YES;
     }
-    // if we previously tried to open and it failed, make sure to close it before we try again
-    if (_db) {
+    if (_db) {// 如果之前尝试打开但失败，请确保在再次尝试之前关闭它
         [self close];
     }
+    
     // now open database
-    int err = sqlite3_open([self sqlitePath], (sqlite3**)&_db );
+    int err = sqlite3_open([self sqlitePath], (sqlite3**)&_db);
     if(err != SQLITE_OK) {
         NSLog(@"error opening!: %d", err);
         return NO;
@@ -177,7 +177,6 @@ NS_ASSUME_NONNULL_END
     
     //当执行这段代码的时候，数据库正在被其他线程访问，就需要给他设置重试时间，
     if (_maxBusyRetryTimeInterval > 0.0) {
-        // set the handler
         [self setMaxBusyRetryTimeInterval:_maxBusyRetryTimeInterval];
     }
     _isOpen = YES;
@@ -193,10 +192,7 @@ NS_ASSUME_NONNULL_END
     if (_isOpen) {
         return YES;
     }
-    
-    // if we previously tried to open and it failed, make sure to close it before we try again
-    
-    if (_db) {
+    if (_db) {// 如果之前尝试打开但失败，请确保在再次尝试之前关闭它
         [self close];
     }
     
@@ -248,8 +244,7 @@ NS_ASSUME_NONNULL_END
                     retry = YES;
                 }
             }
-        }
-        else if (SQLITE_OK != rc) {
+        }else if (SQLITE_OK != rc) {
             NSLog(@"error closing!: %d", rc);
         }
     }
@@ -273,19 +268,27 @@ NS_ASSUME_NONNULL_END
 //       C function causes problems; the rest don't. Anyway, ignoring the .m
 //       files with appledoc will prevent this problem from occurring.
 
+// 该函数就是简单调用 sqlite3_sleep() 来挂起线程
 static int FMDBDatabaseBusyHandler(void *f, int count) {
     FMDatabase *self = (__bridge FMDatabase*)f;
     
-    if (count == 0) {
+    if (count == 0) {// count为0，表示第一次执行回调函数
         self->_startBusyRetryTime = [NSDate timeIntervalSinceReferenceDate];
         return 1;
     }
     
+    // 使用delta变量控制执行回调函数的次数，每次挂起50~100ms
+    // 所以maxBusyRetryTimeInterval的作用就在这体现出来了
+    // 当挂起的时长大于maxBusyRetryTimeInterval，就返回0，并停止执行该回调函数了
     NSTimeInterval delta = [NSDate timeIntervalSinceReferenceDate] - (self->_startBusyRetryTime);
     
     if (delta < [self maxBusyRetryTimeInterval]) {
+        
+        // 使用sqlite3_sleep每次当前线程挂起50~100ms
         int requestedSleepInMillseconds = (int) arc4random_uniform(50) + 50;
         int actualSleepInMilliseconds = sqlite3_sleep(requestedSleepInMillseconds);
+        
+        // 如果实际挂起的时长与想要挂起的时长不一致，可能是因为构建SQLite时没将HAVE_USLEEP置为1
         if (actualSleepInMilliseconds != requestedSleepInMillseconds) {
             NSLog(@"WARNING: Requested sleep of %i milliseconds, but SQLite returned %i. Maybe SQLite wasn't built with HAVE_USLEEP=1?", requestedSleepInMillseconds, actualSleepInMilliseconds);
         }
@@ -295,6 +298,19 @@ static int FMDBDatabaseBusyHandler(void *f, int count) {
     return 0;
 }
 
+/** 程序运行过程中，如果有其他进程或者线程在读写数据库，那么sqlite3_busy_handler() 会不断调用回调函数，直到其他进程或者线程释放锁。
+ * 获得锁之后，不会再调用回调函数，从而向下执行，进行数据库操作。
+ * 该函数是在获取不到锁的时候，以执行回调函数的次数来进行延迟，等待其他进程或者线程操作数据库结束，从而获得锁操作数据库。
+ 
+ 
+ 第一个参数: 告知哪个数据库需要设置busy handler。
+ 第二个参数: 回调函数，当你调用该回调函数时，需传递给它的一个void*的参数的拷贝，也即sqlite3_busy_handler()的第三个参数；
+           另一个需要传给回调函数的int参数是表示这次锁事件，该回调函数被调用的次数。如果回调函数返回０时，将不再尝试再次访问数据库而返回SQLITE_BUSY或者SQLITE_IOERR_BLOCKED。如果回调函数返回非０,　将会不断尝试操作数据库。
+
+ 
+ int sqlite3_busy_handler(sqlite3*,int(*)(void*,int),void*);
+ */
+
 /**
  * SQLITE_API int sqlite3_busy_handler(sqlite3*,int(*)(void*,int),void*);
  * param1 哪个数据库需要设置busy_handler
@@ -303,18 +319,18 @@ static int FMDBDatabaseBusyHandler(void *f, int count) {
  * 当获取不到锁时，会执行回调函数的次数以此来延时，等待其他线程等操作完数据库，这样获得操作数据库。
  */
 - (void)setMaxBusyRetryTimeInterval:(NSTimeInterval)timeout {
-    
+    //默认_maxBusyRetryTimeInterval为2
+
     _maxBusyRetryTimeInterval = timeout;
     
     if (!_db) {
         return;
     }
     
-    if (timeout > 0) {
+    if (timeout > 0) {//处理的 handler 设置为FMDBDatabaseBusyHandler() 函数
         sqlite3_busy_handler(_db, &FMDBDatabaseBusyHandler, (__bridge void *)(self));
-    }
-    else {
-        // turn it off otherwise
+    }else {
+        // 不使用任何busy handler处理
         sqlite3_busy_handler(_db, nil, nil);
     }
 }
@@ -1348,65 +1364,90 @@ int FMDBExecuteBulkSQLCallback(void *theBlockAsVoid, int columns, char **values,
 
 #pragma clang diagnostic pop
 
-#pragma mark Transactions
+#pragma mark 事务
 
+/**
+SQLite目前不允许嵌套事务。
+
+可以使用BEGIN命令手动启动事务。这样启动的事务会在下一条COMMIT或ROLLBACK命令之前一直有效。但若数据库关闭 或出现错误且选用ROLLBACK冲突判定算法时，数据库也会ROLLBACK。
+
+
+在SQLite 3.0.8 或更高版本中，事务可以是延迟的，即时的或者独占的。
+“延迟的”即是说在数据库第一次被访问之前不获得锁。 这样就会延迟事务，BEGIN语句本身不做任何事情。
+直到初次读取或访问数据库时才获取锁。对数据库的初次读取创建一个SHARED锁 ，初次写入创建一个RESERVED锁。
+由于锁的获取被延迟到第一次需要时，别的线程或进程可以在当前线程执行BEGIN语句之后创建另外的事务 写入数据库。
+
+若事务是即时的，则执行BEGIN命令后立即获取RESERVED锁，而不等数据库被使用。在执行BEGIN IMMEDIATE之后， 你可以确保其它的线程或进程不能写入数据库或执行BEGIN IMMEDIATE或BEGIN EXCLUSIVE. 但其它进程可以读取数据库。
+
+独占事务在所有的数据库获取EXCLUSIVE锁，在执行BEGIN EXCLUSIVE之后，你可以确保在当前事务结束前没有任何其它线程或进程 能够读写数据库。
+
+ 
+BEGIN 或 START TRANSACTION 显式地开启一个事务；
+
+COMMIT 也可以使用 COMMIT WORK，不过二者是等价的。COMMIT 会提交事务，并使已对数据库进行的所有修改成为永久性的；
+
+ROLLBACK 也可以使用 ROLLBACK WORK，不过二者是等价的。回滚会结束用户的事务，并撤销正在进行的所有未提交的修改；
+
+SAVEPOINT identifier，SAVEPOINT 允许在事务中创建一个保存点，一个事务中可以有多个 SAVEPOINT；
+
+RELEASE SAVEPOINT identifier 删除一个事务的保存点，当没有指定的保存点时，执行该语句会抛出一个异常；
+
+ROLLBACK TO identifier 把事务回滚到标记点；
+
+SET TRANSACTION 用来设置事务的隔离级别。InnoDB 存储引擎提供事务的隔离级别有READ UNCOMMITTED、READ COMMITTED、REPEATABLE READ 和 SERIALIZABLE。]
+ 
+ */
+
+//事务回滚
 - (BOOL)rollback {
     BOOL b = [self executeUpdate:@"rollback transaction"];
-    
     if (b) {
         _isInTransaction = NO;
     }
-    
     return b;
 }
 
+//事务确认
 - (BOOL)commit {
     BOOL b =  [self executeUpdate:@"commit transaction"];
-    
     if (b) {
         _isInTransaction = NO;
     }
-    
     return b;
 }
 
-- (BOOL)beginTransaction {
-    
+- (BOOL)beginTransaction {//默认开始互斥事务
     BOOL b = [self executeUpdate:@"begin exclusive transaction"];
     if (b) {
         _isInTransaction = YES;
     }
-    
     return b;
 }
 
+//开始一个延迟的事务
 - (BOOL)beginDeferredTransaction {
-    
     BOOL b = [self executeUpdate:@"begin deferred transaction"];
     if (b) {
         _isInTransaction = YES;
     }
-    
     return b;
 }
 
+//立即开启事务
 - (BOOL)beginImmediateTransaction {
-    
     BOOL b = [self executeUpdate:@"begin immediate transaction"];
     if (b) {
         _isInTransaction = YES;
     }
-    
     return b;
 }
 
+//开始互斥事务
 - (BOOL)beginExclusiveTransaction {
-    
     BOOL b = [self executeUpdate:@"begin exclusive transaction"];
     if (b) {
         _isInTransaction = YES;
     }
-    
     return b;
 }
 
@@ -1414,8 +1455,7 @@ int FMDBExecuteBulkSQLCallback(void *theBlockAsVoid, int columns, char **values,
     return _isInTransaction;
 }
 
-- (BOOL)interrupt
-{
+- (BOOL)interrupt{
     if (_db) {
         sqlite3_interrupt([self sqliteHandle]);
         return YES;

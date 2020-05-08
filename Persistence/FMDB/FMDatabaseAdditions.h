@@ -22,9 +22,9 @@ NS_ASSUME_NONNULL_BEGIN
 ///----------------------------------------
 
 
-/** 使用SQL查询某个值
+/** 使用SQL查询某个值：比如某个人的年纪 "SELECT age FROM Person WHERE Name = ?",@"zhangsan"
  * @param query 要执行的SQL查询
- * @param ... 将绑定到SQL语句 `?`占位符 的一些参数
+ * @note 被搜索的键最好具有唯一性，得到的结果才能唯一；
  * @note 在 Swift 中不可用
  */
 - (int)intForQuery:(NSString*)query, ...;

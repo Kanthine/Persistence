@@ -29,6 +29,7 @@
 		1ABDCEFB2463AA7800A66990 /* FMResultSet.m in Sources */ = {isa = PBXBuildFile; fileRef = 1ABDCEEC2463AA7700A66990 /* FMResultSet.m */; };
 		1ABDCEFC2463AA7800A66990 /* Resource.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 1ABDCEED2463AA7700A66990 /* Resource.bundle */; };
 		1ABDCEFD2463AA7800A66990 /* TextViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 1ABDCEEE2463AA7700A66990 /* TextViewController.m */; };
+		1AEA64EB246506540050D9B0 /* FMDB in Resources */ = {isa = PBXBuildFile; fileRef = 1AEA64EA246506540050D9B0 /* FMDB */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -92,6 +93,7 @@
 		1ABDCEEC2463AA7700A66990 /* FMResultSet.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FMResultSet.m; sourceTree = "<group>"; };
 		1ABDCEED2463AA7700A66990 /* Resource.bundle */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.plug-in"; path = Resource.bundle; sourceTree = "<group>"; };
 		1ABDCEEE2463AA7700A66990 /* TextViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TextViewController.m; sourceTree = "<group>"; };
+		1AEA64EA246506540050D9B0 /* FMDB */ = {isa = PBXFileReference; lastKnownFileType = file; path = FMDB; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -180,20 +182,20 @@
 		1ABDCED12463AA7700A66990 /* Model */ = {
 			isa = PBXGroup;
 			children = (
-				1ABDCED22463AA7700A66990 /* ProvincesModel+DAO.h */,
-				1ABDCED32463AA7700A66990 /* UserModel+DAO.h */,
-				1ABDCED42463AA7700A66990 /* PhoneCodeModel+DAO.h */,
-				1ABDCED52463AA7700A66990 /* PhoneCodeModel.h */,
-				1ABDCED62463AA7700A66990 /* DatabaseManagement.m */,
-				1ABDCED72463AA7700A66990 /* UserModel.m */,
-				1ABDCED82463AA7700A66990 /* ProvincesModel.m */,
-				1ABDCED92463AA7700A66990 /* UserModel+DAO.m */,
-				1ABDCEDA2463AA7700A66990 /* ProvincesModel+DAO.m */,
-				1ABDCEDB2463AA7700A66990 /* PhoneCodeModel+DAO.m */,
 				1ABDCEDC2463AA7700A66990 /* DatabaseManagement.h */,
+				1ABDCED62463AA7700A66990 /* DatabaseManagement.m */,
+				1ABDCED52463AA7700A66990 /* PhoneCodeModel.h */,
 				1ABDCEDD2463AA7700A66990 /* PhoneCodeModel.m */,
+				1ABDCED42463AA7700A66990 /* PhoneCodeModel+DAO.h */,
+				1ABDCEDB2463AA7700A66990 /* PhoneCodeModel+DAO.m */,
 				1ABDCEDE2463AA7700A66990 /* ProvincesModel.h */,
+				1ABDCED82463AA7700A66990 /* ProvincesModel.m */,
+				1ABDCED22463AA7700A66990 /* ProvincesModel+DAO.h */,
+				1ABDCEDA2463AA7700A66990 /* ProvincesModel+DAO.m */,
 				1ABDCEDF2463AA7700A66990 /* UserModel.h */,
+				1ABDCED72463AA7700A66990 /* UserModel.m */,
+				1ABDCED32463AA7700A66990 /* UserModel+DAO.h */,
+				1ABDCED92463AA7700A66990 /* UserModel+DAO.m */,
 			);
 			path = Model;
 			sourceTree = "<group>";
@@ -202,16 +204,17 @@
 			isa = PBXGroup;
 			children = (
 				1ABDCEE22463AA7700A66990 /* FMDatabase.h */,
-				1ABDCEE32463AA7700A66990 /* FMDatabaseQueue.m */,
-				1ABDCEE42463AA7700A66990 /* FMResultSet.h */,
-				1ABDCEE52463AA7700A66990 /* FMDatabasePool.h */,
-				1ABDCEE62463AA7700A66990 /* FMDatabaseAdditions.m */,
 				1ABDCEE72463AA7700A66990 /* FMDatabase.m */,
-				1ABDCEE82463AA7700A66990 /* FMDatabaseQueue.h */,
-				1ABDCEE92463AA7700A66990 /* FMDB.h */,
 				1ABDCEEA2463AA7700A66990 /* FMDatabaseAdditions.h */,
+				1ABDCEE62463AA7700A66990 /* FMDatabaseAdditions.m */,
+				1ABDCEE52463AA7700A66990 /* FMDatabasePool.h */,
 				1ABDCEEB2463AA7700A66990 /* FMDatabasePool.m */,
+				1ABDCEE82463AA7700A66990 /* FMDatabaseQueue.h */,
+				1ABDCEE32463AA7700A66990 /* FMDatabaseQueue.m */,
+				1ABDCEE92463AA7700A66990 /* FMDB.h */,
+				1ABDCEE42463AA7700A66990 /* FMResultSet.h */,
 				1ABDCEEC2463AA7700A66990 /* FMResultSet.m */,
+				1AEA64EA246506540050D9B0 /* FMDB */,
 			);
 			path = FMDB;
 			sourceTree = "<group>";
@@ -319,6 +322,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				1AEA64EB246506540050D9B0 /* FMDB in Resources */,
 				1ABDCEF62463AA7800A66990 /* TextViewController.xib in Resources */,
 				1ABDCEAB2463AA0000A66990 /* LaunchScreen.storyboard in Resources */,
 				1ABDCEA82463AA0000A66990 /* Assets.xcassets in Resources */,

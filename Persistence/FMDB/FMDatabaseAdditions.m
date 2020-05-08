@@ -79,17 +79,15 @@ return ret;
     return returnBool;
 }
 
-/*
- get table with list of tables: result colums: type[STRING], name[STRING],tbl_name[STRING],rootpage[INTEGER],sql[STRING]
- check if table exist in database  (patch from OZLB)
+/** 查询数据库中：所有表的一些简要信息
+ * 对于表来说， tbl_name 是表名。
+ * 但 sqlite_master 中不仅可以是表对象，还可以是其它对象，
+ * 比如索引： name 是索引的名字，而 tbl_name 是索引所属的表名
 */
 - (FMResultSet * _Nullable)getSchema {
-    //查询数据库schema(所有表的一些信息)
-    //*对于表来说， tbl_name 则仍然是表名。 但sqlite_master 中不仅是表记录，还有其它的对象，比如索引，对于索引来说 name 是索引的名字，而tbl_name 是索引所属的表名。
 
     //result colums: type[STRING], name[STRING],tbl_name[STRING],rootpage[INTEGER],sql[STRING]
     FMResultSet *rs = [self executeQuery:@"SELECT type, name, tbl_name, rootpage, sql FROM (SELECT * FROM sqlite_master UNION ALL SELECT * FROM sqlite_temp_master) WHERE type != 'meta' AND name NOT LIKE 'sqlite_%' ORDER BY tbl_name, type DESC, name"];
-    
     return rs;
 }
 

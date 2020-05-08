@@ -41,44 +41,65 @@
 
 - (IBAction)insertButtonClick:(UIButton *)sender {
     NSLog(@"%s",__func__);
-//    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-//        [[PhoneCodeModel phoneCodeArray] enumerateObjectsUsingBlock:^(PhoneCodeModel * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
-//            [PhoneCodeModel insertModel:obj];
-//        }];
-//    });
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+        [[PhoneCodeModel phoneCodeArray] enumerateObjectsUsingBlock:^(PhoneCodeModel * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+            [PhoneCodeModel insertModel:obj];
+        }];
+    });
     
     [ProvincesModel replaceModels:[ProvincesModel provincesModelArray]];
     
     [PhoneCodeModel insertModel:self.phoneCodeModel];
+    
+    [DatabaseManagement info];
 }
 
 - (IBAction)replaceButtonClick:(UIButton *)sender {
     NSLog(@"%s",__func__);
     [PhoneCodeModel replaceModel:self.phoneCodeModel];
+    
+    [DatabaseManagement info];
 }
 
 
 - (IBAction)updateButtonClick:(UIButton *)sender {
     NSLog(@"%s",__func__);
     [PhoneCodeModel updateModel:self.phoneCodeModel];
+    
+    [DatabaseManagement info];
 }
 
 
 - (IBAction)queueButtonClick:(UIButton *)sender {
     NSLog(@"%s",__func__);
-//    PhoneCodeModel getModelWithKey:<#(nonnull NSString *)#> value:<#(nonnull NSString *)#> completionBlock:<#^(NSArray<PhoneCodeModel *> * _Nonnull models)block#>
-//    + (void)getModelWithKey:(NSString *)key value:(NSString *)value completionBlock:(void(^)(NSArray<PhoneCodeModel *> *models))block;
+//    [PhoneCodeModel getNameWithPhoneCode:self.phoneCodeTextField.text completionBlock:^(NSString * _Nonnull name) {
+//        NSLog(@"name === %@",name);
+//    }];
+//
+//    [ProvincesModel getModelWithKey:@"regionType" value:@"1" completionBlock:^(NSArray<ProvincesModel *> * _Nonnull models) {
+//        NSLog(@"models ----- %@",models);
+//    }];
+    
+    [PhoneCodeModel getAllDatas:^(NSArray<PhoneCodeModel *> * _Nonnull models) {
+         NSLog(@"models ----- %@",models);
+    }];
+    
+    
+    [DatabaseManagement info];
 }
-
 
 - (IBAction)deleteButtonClick:(UIButton *)sender {
     NSLog(@"%s",__func__);
     [PhoneCodeModel deleteModel:self.phoneCodeModel];
+    
+    [DatabaseManagement info];
 }
 
 - (IBAction)dropButtonClick:(UIButton *)sender {
     NSLog(@"%s",__func__);
-    [PhoneCodeModel dropTable];
+    [DatabaseManagement clearSqlite];
+    
+    [DatabaseManagement info];
 }
 
 

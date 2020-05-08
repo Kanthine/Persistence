@@ -29,19 +29,24 @@
 + (void)getModelWithKey:(NSString *)key value:(NSString *)value completionBlock:(void(^)(NSArray<ProvincesModel *> *models))block{
     [DatabaseManagement databaseChildThreadInTransaction:^(FMDatabase *database, BOOL *rollback) {
         
+        NSString *sql = [NSString stringWithFormat:@"SELECT * FROM ProvincesModel WHERE %@ = %@",key,value];
         NSMutableArray *array = [NSMutableArray array];
         
-        FMResultSet *resultSet = [database executeQuery:@"SELECT * FROM ProvincesModel WHERE ? = ?",key,value];
-        while ([resultSet next]){
-            ProvincesModel *model = [[ProvincesModel alloc] init];
-            model.regionId = [resultSet stringForColumn:@"regionId"];
-            model.regionName = [resultSet stringForColumn:@"regionName"];
-            model.regionType = [resultSet stringForColumn:@"regionType"];
-            model.parentId = [resultSet stringForColumn:@"parentId"];
-            model.agencyId = [resultSet stringForColumn:@"agencyId"];
-            [array addObject:model];
+        FMResultSet *resultSet = [database executeQuery:sql];
+        if (resultSet) {
+            while ([resultSet next]){
+                ProvincesModel *model = [[ProvincesModel alloc] init];
+                model.regionId = [resultSet stringForColumn:@"regionId"];
+                model.regionName = [resultSet stringForColumn:@"regionName"];
+                model.regionType = [resultSet stringForColumn:@"regionType"];
+                model.parentId = [resultSet stringForColumn:@"parentId"];
+                model.agencyId = [resultSet stringForColumn:@"agencyId"];
+                [array addObject:model];
+            }
+            [resultSet close];
+        }else{
+            NSLog(@"Error ====== %@",database.lastError);
         }
-        [resultSet close];
         
        dispatch_async(dispatch_get_main_queue(), ^{
             block(array);

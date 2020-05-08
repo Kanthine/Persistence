@@ -86,7 +86,7 @@ NS_ASSUME_NONNULL_BEGIN
  */
 + (Class)databaseClass;
 
-/** 关闭队列使用的数据库
+/** 关闭数据库
  */
 - (void)close;
 

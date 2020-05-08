@@ -15,30 +15,23 @@
 #import <sqlite3.h>
 #endif
 
+//开启的事务类型
 typedef NS_ENUM(NSInteger, FMDBTransaction) {
-    FMDBTransactionExclusive,
-    FMDBTransactionDeferred,
-    FMDBTransactionImmediate,
+    FMDBTransactionExclusive,//开始互斥事务
+    FMDBTransactionDeferred,//开始一个延迟的事务
+    FMDBTransactionImmediate,//立即开启事务
 };
 
-/*
- 
- Note: we call [self retain]; before using dispatch_sync, just incase 
- FMDatabaseQueue is released on another thread and we're in the middle of doing
- something in dispatch_sync
- 
- */
-
-/*
- * A key used to associate the FMDatabaseQueue object with the dispatch_queue_t it uses.
- * This in turn is used for deadlock detection by seeing if inDatabase: is called on
- * the queue's dispatch queue, which should not happen and causes a deadlock.
+/**
+ * 注:调用[self retain];在使用dispatch_sync()之前，假设FMDatabaseQueue是在另一个线程上发布的，而我们正在dispatch_sync() 中执行一些操作
+ * 用于将 FMDatabaseQueue 对象与它使用的dispatch_queue_t关联的键。
+ * 这反过来用于死锁检测，通过查看inDatabase: 是否在队列的调度队列上调用，这应该不会发生并导致死锁。
  */
 static const void * const kDispatchQueueSpecificKey = &kDispatchQueueSpecificKey;
 
 @interface FMDatabaseQueue () {
-    dispatch_queue_t    _queue;
-    FMDatabase          *_db;
+    dispatch_queue_t    _queue;//串行队列
+    FMDatabase          *_db;//数据库操作
 }
 @end
 
@@ -172,6 +165,8 @@ static const void * const kDispatchQueueSpecificKey = &kDispatchQueueSpecificKey
 
 - (void)inDatabase:(__attribute__((noescape)) void (^)(FMDatabase *db))block {
 #ifndef NDEBUG
+    //获取当前正在执行的队列(可能为nil，但理论上可以是另一个DB队列)
+    //然后检查self，确保我们不会死锁。
     /* Get the currently executing queue (which should probably be nil, but in theory could be another DB queue
      * and then check it against self to make sure we're not about to deadlock. */
     FMDatabaseQueue *currentSyncQueue = (__bridge id)dispatch_get_specific(kDispatchQueueSpecificKey);
@@ -180,12 +175,10 @@ static const void * const kDispatchQueueSpecificKey = &kDispatchQueueSpecificKey
     
     FMDBRetain(self);
     
-    dispatch_sync(_queue, ^() {
+    dispatch_sync(_queue, ^() {//同步执行串行队列
         
         FMDatabase *db = [self database];
-        
         block(db);
-        
         if ([db hasOpenResultSets]) {
             NSLog(@"Warning: there is at least one open result set around after performing [FMDatabaseQueue inDatabase:]");
             
@@ -203,10 +196,8 @@ static const void * const kDispatchQueueSpecificKey = &kDispatchQueueSpecificKey
 
 - (void)beginTransaction:(FMDBTransaction)transaction withBlock:(void (^)(FMDatabase *db, BOOL *rollback))block {
     FMDBRetain(self);
-    dispatch_sync(_queue, ^() { 
-        
+    dispatch_sync(_queue, ^() { //同步执行串行队列
         BOOL shouldRollback = NO;
-
         switch (transaction) {
             case FMDBTransactionExclusive:
                 [[self database] beginTransaction];

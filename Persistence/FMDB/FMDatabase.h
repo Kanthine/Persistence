@@ -76,7 +76,7 @@ typedef NS_ENUM(int, FMDBCheckpointMode) {
 /// @name Properties
 ///-----------------
 
-/** 是否应该跟踪执行
+/** 是否应该跟踪执行，默认为 NO
  */
 @property (atomic, assign) BOOL traceExecution;
 
@@ -187,14 +187,11 @@ typedef NS_ENUM(int, FMDBCheckpointMode) {
  * 该方法使用 sqlite3_prepare_v2()，sqlite3_bind()将值绑定到 '?' 占位符与可选的参数列表，和sqlite_step() 执行更新。
  *
  *
- * @return 成功返回 YES。如果失败，可以调用 lastError、 lastErrorCod 或 lastErrorMessage 获取失败信息；
+ * @return 成功返回 YES。如果失败，可以调用 -lastError、 -lastErrorCod 或 -lastErrorMessage 获取失败信息；
  *
  * @note 使用 '?' 占位符将值参数绑定到该位置；这种方法比 [NSString stringWithFormat:] 手动构建 SQL 语句更安全，如果值碰巧包含需要引用的任何字符，则可能会出现问题。
  * @note 由于Swift和Objective-C变量实现之间的不兼容性，在Swift中需要使用 executeUpdate:values: 代替
  *
- * @see lastError
- * @see lastErrorCode
- * @see lastErrorMessage
  * @see [`sqlite3_bind`](http://sqlite.org/c3ref/bind_blob.html)
  */
 - (BOOL)executeUpdate:(NSString*)sql withErrorAndBindings:(NSError * _Nullable __autoreleasing *)outErr, ...;
@@ -280,18 +277,24 @@ typedef NS_ENUM(int, FMDBCheckpointMode) {
 /** 执行查询
  * @param sql 查询语句，带有可选的'?'的占位符；
  * @param ... 绑定到SQL语句中的可选参数，与 '%s'、'%d'成对使用。
- * @return 查询成功返回 FMResultSet 对象；失败则返回 nil；可以设置双指针 NSError ，也可以调用 lastError、 lastErrorCod 或 lastErrorMessage 获取失败信息；
- * 为了遍历查询结果，可以使用 while([FMResultSet next]) 循环从一条记录到另一条记录。
+ * @参数 values 数组的元素将对应绑定到 SQL语句占位符'?' 处；
+ * @参数 arguments NSDictionary的kay-value 将绑定到 SQL语句占位符'?' 处；
+ * @return 查询成功返回 FMResultSet 对象；失败则返回 nil；
+ *
+ * @note 获取失败信息，可以设置双指针 NSError ，也可以调用 -lastError、-lastErrorCod 或 -lastErrorMessage 方法
+ * @note 获取查询结果，需要遍历 while([FMResultSet next]) 循环从一条记录到另一条记录。
  * 此方法对任何可选值参数使用sqlite3_bind()，这可以正确地转义需要转义序列的任何字符(例如引号)，从而消除简单的SQL错误，并防止SQL注入攻击。
  
  * @see [`sqlite3_bind`](http://sqlite.org/c3ref/bind_blob.html)
  */
 - (FMResultSet * _Nullable)executeQuery:(NSString*)sql, ...;
+- (FMResultSet * _Nullable)executeQuery:(NSString *)sql values:(NSArray * _Nullable)values error:(NSError * _Nullable __autoreleasing *)error;
+- (FMResultSet * _Nullable)executeQuery:(NSString *)sql withArgumentsInArray:(NSArray *)arguments;
+- (FMResultSet * _Nullable)executeQuery:(NSString *)sql withParameterDictionary:(NSDictionary * _Nullable)arguments;
+- (FMResultSet * _Nullable)executeQuery:(NSString *)sql withVAList:(va_list)args;
+
 
 /** 执行查询
- * @param format 要执行查询的SQL，带有'%@'、'%d'等样式的转义序列；
- * @param ... 绑定到SQL语句中的可选参数，与 '%@'、'%d'成对使用。
- * @return 查询成功返回 FMResultSet 对象；失败则返回 nil；可以设置双指针 NSError ，也可以调用 lastError、 lastErrorCod 或 lastErrorMessage 获取失败信息；
  *
  * @note [db executeQueryWithFormat:@"SELECT * FROM test WHERE name=%@", @"Gus"];
  * @note [db executeQuery:@"SELECT * FROM test WHERE name=?", @"Gus"];
@@ -299,77 +302,50 @@ typedef NS_ENUM(int, FMDBCheckpointMode) {
  */
 - (FMResultSet * _Nullable)executeQueryWithFormat:(NSString*)format, ... NS_FORMAT_FUNCTION(1,2);
 
-/** 执行查询
- * @param sql 查询语句，带有可选的'?'的占位符；
- * @param values 数组的元素将对应绑定到 SQL语句占位符'?' 处；
- * @param error 双指针 NSError，记录发生的错误；如果为 nil ，则不会返回 NSError；
- * @return 查询成功返回 FMResultSet 对象；失败则返回 nil；可以设置双指针 NSError ，也可以调用 lastError、 lastErrorCod 或 lastErrorMessage 获取失败信息；
-*/
-- (FMResultSet * _Nullable)executeQuery:(NSString *)sql values:(NSArray * _Nullable)values error:(NSError * _Nullable __autoreleasing *)error;
-- (FMResultSet * _Nullable)executeQuery:(NSString *)sql withArgumentsInArray:(NSArray *)arguments;
 
 
-/** 执行查询
- * @param sql 查询语句，带有可选的'?'的占位符；
- * @param arguments NSDictionary的kay-value 将绑定到 SQL语句占位符'?' 处；
- *
- * @return 查询成功返回 FMResultSet 对象；失败则返回 nil；可以设置双指针 NSError ，也可以调用 lastError、 lastErrorCod 或 lastErrorMessage 获取失败信息；
- */
-- (FMResultSet * _Nullable)executeQuery:(NSString *)sql withParameterDictionary:(NSDictionary * _Nullable)arguments;
-- (FMResultSet * _Nullable)executeQuery:(NSString *)sql withVAList:(va_list)args;
 
 ///-------------------
-/// @name 事务
+/// @name 事务： 用事务处理一系列数据库操作，省时效率高
 ///-------------------
 
-/** 事务: 主要用于处理操作量大，复杂度高的数据。
- *      比如说，在人员管理系统中，你删除一个人员，你既需要删除人员的基本资料，也要删除和该人员相关的信息，如信箱，文章等等，这样， 这些数据库操作语句就构成一个事务！
+/** 事务（Transaction）：一般是指要做的或所做的事情；在计算机中是指访问并可能更新数据库中各种数据项的一个程序执行单元。
+ * 事务由事务开始(begin transaction)和事务结束(end transaction)之间执行的全体操作组成。
  *
- * 一般来说，事务是必须满足4个条件（ACID）：
- *    原子性 Atomicity，或称不可分割性 ：一个事务中的所有操作，要么全部完成，要么全部不完成，不会结束在中间某个环节。
- *                事务在执行过程中发生错误，会被回滚（Rollback）到事务开始前的状态，就像这个事务从来没有执行过一样。
- *     一致性 Consistency ：在事务开始之前和事务结束以后，数据库的完整性没有被破坏。
- *               这表示写入的资料必须完全符合所有的预设规则，这包含资料的精确度、串联性以及后续数据库可以自发性地完成预定的工作。
- *   隔离性 Isolation，又称独立性：数据库允许多个并发事务同时对其数据进行读写和修改的能力，
- *                          隔离性可以防止多个事务并发执行时由于交叉执行而导致数据的不一致。
- *        事务隔离分为不同级别，包括读未提交 Read uncommitted、读提交read committed、可重复读repeatable read和串行化Serializable
- *   持久性Durability ：事务处理结束后，对数据的修改就是永久的，即便系统故障也不会丢失。
+ * 主要用于处理操作量大，复杂度高的数据。
+ *      比如人员管理系统中，删除一个人员，既需要删除人员的基本资料，也要删除和该人员相关的信息，如信箱，文章等等，这样， 这些数据库操作语句就构成一个事务！
+ *
+ * 一般来说，事务具有4个属性：
+ *    原子性：一个事务是一个不可分割的工作单位，事务中包括的操作要么都做，要么都不做；
+ *          事务在执行过程中发生错误，会被回滚（Rollback）到事务开始前的状态，就像这个事务从来没有执行过一样。
+ *    一致性：事务必须使数据库从一个一致性状态变到另一个一致性状态。一致性与原子性是密切相关的。
+ *          这表示写入的资料必须完全符合所有的预设规则，这包含资料的精确度、串联性以及后续数据库可以自发性地完成预定的工作。
+ *    隔离性：一个事务内部的操作及使用的数据对并发的其他事务是隔离的，并发执行的各个事务之间不能互相干扰；
+ *          隔离性可以防止多个事务并发执行时由于交叉执行而导致数据的不一致。
+ *          事务隔离分为不同级别，包括读未提交、读提交、可重复读和串行化
+ *    持久性：指一个事务一旦提交，它对数据库中数据的改变就应该是永久性的。接下来的其它操作、甚至系统故障也不会对其有任何影响。
  */
 
 
 /** 开启事务
- * @return 成功返回 YES。如果失败，可以调用 lastError、 lastErrorCod 或 lastErrorMessage 获取失败信息；
+ * @note FMDatabase对事务的操作，操作成功返回 YES。失败调用 -lastError、-lastErrorCod 或 -lastErrorMessage 获取失败信息；
  *
  * @warning 与 SQLite 的 BEGIN TRANSACTION 不同，此方法当前执行的是互斥事务，而不是延迟事务；
  *       在FMDB的未来版本中，这种行为可能会改变，因此该方法最终可能采用标准SQLite行为并执行延迟事务。
  *       建议使用 -beginExclusiveTransaction ，保证代码在未来不会被修改。
  */
 - (BOOL)beginTransaction;
-
-/** 开始一个延迟的事务
- * @return 成功返回 YES。如果失败，可以调用 lastError、 lastErrorCod 或 lastErrorMessage 获取失败信息；
- */
-- (BOOL)beginDeferredTransaction;
-
-/** 立即开启事务
- * @return 成功返回 YES。如果失败，可以调用 lastError、 lastErrorCod 或 lastErrorMessage 获取失败信息；
- */
-- (BOOL)beginImmediateTransaction;
-
-/** 开始互斥事务
- * @return 成功返回 YES。如果失败，可以调用 lastError、 lastErrorCod 或 lastErrorMessage 获取失败信息；
- */
-- (BOOL)beginExclusiveTransaction;
+- (BOOL)beginDeferredTransaction;//开始一个延迟的事务
+- (BOOL)beginImmediateTransaction;//立即开启事务
+- (BOOL)beginExclusiveTransaction;//开始互斥事务
 
 /** 提交一个事务
  * 提交一个由 -beginTransaction 或 -beginDeferredTransaction 启动的事务。
- * @return 成功返回 YES。如果失败，可以调用 lastError、 lastErrorCod 或 lastErrorMessage 获取失败信息；
  */
 - (BOOL)commit;
 
-/** 回滚事务
+/** 回滚事务：把数据库恢复到上次 -commit 或 -rollback 命令时的情况
  * 回滚用 -beginTransaction 或 -beginDeferredTransaction 启动的事务。
- * @return 成功返回 YES。如果失败，可以调用 lastError、 lastErrorCod 或 lastErrorMessage 获取失败信息；
  */
 - (BOOL)rollback;
 
@@ -475,12 +451,16 @@ typedef NS_ENUM(int, FMDBCheckpointMode) {
  */
 - (NSError *)lastError;
 
+
+/** 记录当前操作数据库的线程的最大停顿时间
+ * 在这段时间里它会判断是否有其它线程在操作数据库，如果有则等待其它线程操作数据库结束
+ */
 @property (nonatomic) NSTimeInterval maxBusyRetryTimeInterval;
 
 
 ///------------------
 /// @name FMDB 使用 SQLite 事务 Save Point
-///
+/// savepoint 是在数据库事务处理中实现“子事务”（subtransaction），也称为嵌套事务的方法。事务可以回滚到 savepoint 而不影响 savepoint 创建前的变化, 不需要放弃整个事务。
 /// 在SQLite中，事务提供了批量处理，批量撤销的功能。当批量操作中有一步无法完成操作，就会把执行过的语句都撤销，恢复到撤销前的状态。
 /// 但是由于 SQLite 不支持事务嵌套，所以用户不能直接完成复杂的事务；不过，SQLite提供了保存点Save Point机制。
 /// 用户可以在事务中添加保存点，然后根据情况，回滚到指定的保存点，并可以重新执行保存点之后的代码。
@@ -572,10 +552,32 @@ typedef NS_ENUM(int, FMDBCheckpointMode) {
 
 
 ///----------------------------
-/// @name SQLite库状态
+/// @name SQLite 状态
 ///----------------------------
 
-/** 该库是否是线程安全的
+/** 是否线程安全
+ *
+ * SQLite支持三种不同的线程模式:
+ *   1、单线程：该模式下，所有的互斥锁被禁用；SQLite 在多线程中使用是不安全的。
+ *             当SQLite编译时，SQLITE_THREADSAFE 被设置为 0，
+ *             或者在初始化SQLite前调用sqlite3_config(SQLITE_CONFIG_SINGLETHREAD)时启用该模式
+ *   2、多线程：在多个线程中并发使用同一个数据库连接是不安全的
+ *   3、串行：在串行模式下，SQLite 在多线程中使用是安全的
+ *
+ * 线程模式可以在编译时（通过源码编译sqlite库时）、启动时（使用sqlite的应用程序初始化时）或者运行时（创建数据库连接时）来指定。
+ * 一般而言，运行时指定的模式将覆盖启动时的指定模式，启动时指定的模式将覆盖编译时指定的模式。但是，单线程模式一旦被指定，将无法被覆盖。
+ *
+ * 编译时选择线程模式：
+ *  串行模式  ：SQLITE_THREADSAFE = 1
+ *  单线程模式：SQLITE_THREADSAFE = 0
+ *  多线程模式：SQLITE_THREADSAFE ＝ 2
+ *
+ * 在iOS平台上，默认使用多线程模式，也就是只有一个线程能够打开数据库操作，其他线程要操作数据库必须等数据库关闭后才能打开操作。
+ * 在多线程中：每个线程独立打开数据库，操作数据库，操作完后关闭数据库。打开和关闭都比较费时间。
+ *
+ * 如果多个线程频繁操作数据库，使用以上方法很容易造成系统崩溃，解决方案：
+ *   1、开启串行模式：使用单例类操作数据库
+ *   2、使用串行队列操作数据库：FMDatabaseQueue
  *
  * @return NO 当且仅当SQLite编译时，由于编译时特性SQLITE_THREADSAFE被设置为0，使用互斥代码省略
  * @see [sqlite3_threadsafe()](http://sqlite.org/c3ref/threadsafe.html)
@@ -583,14 +585,11 @@ typedef NS_ENUM(int, FMDBCheckpointMode) {
 
 + (BOOL)isSQLiteThreadSafe;
 
-/** Run-time library version numbers
- 
- @return The sqlite library version string.
- 
- @see [sqlite3_libversion()](http://sqlite.org/c3ref/libversion.html)
+/** 获取 SDK 的版本号
+ * @see [sqlite3_libversion()](http://sqlite.org/c3ref/libversion.html)
  */
-+ (NSString*)sqliteLibVersion;
-+ (NSString*)FMDBUserVersion;
++ (NSString*)sqliteLibVersion;//sqlite SDK的版本号
++ (NSString*)FMDBUserVersion;//FMDB SDK的版本号
 + (SInt32)FMDBVersion;
 
 
