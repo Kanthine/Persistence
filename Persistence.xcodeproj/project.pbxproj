@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		1A6FDF7724664D1300996C1F /* Persons.m in Sources */ = {isa = PBXBuildFile; fileRef = 1A6FDF7624664D1300996C1F /* Persons.m */; };
+		1A6FDF7A2466533500996C1F /* Car.m in Sources */ = {isa = PBXBuildFile; fileRef = 1A6FDF792466533500996C1F /* Car.m */; };
 		1ABDCE9A2463A9FF00A66990 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 1ABDCE992463A9FF00A66990 /* AppDelegate.m */; };
 		1ABDCEA62463A9FF00A66990 /* Persistence.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 1ABDCEA42463A9FF00A66990 /* Persistence.xcdatamodeld */; };
 		1ABDCEA82463AA0000A66990 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 1ABDCEA72463AA0000A66990 /* Assets.xcassets */; };
@@ -50,6 +52,10 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		1A6FDF7524664D1300996C1F /* Persons.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Persons.h; sourceTree = "<group>"; };
+		1A6FDF7624664D1300996C1F /* Persons.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = Persons.m; sourceTree = "<group>"; };
+		1A6FDF782466533500996C1F /* Car.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Car.h; sourceTree = "<group>"; };
+		1A6FDF792466533500996C1F /* Car.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = Car.m; sourceTree = "<group>"; };
 		1ABDCE952463A9FF00A66990 /* Persistence.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Persistence.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		1ABDCE982463A9FF00A66990 /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
 		1ABDCE992463A9FF00A66990 /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
@@ -184,6 +190,10 @@
 			children = (
 				1ABDCEDC2463AA7700A66990 /* DatabaseManagement.h */,
 				1ABDCED62463AA7700A66990 /* DatabaseManagement.m */,
+				1A6FDF7524664D1300996C1F /* Persons.h */,
+				1A6FDF7624664D1300996C1F /* Persons.m */,
+				1A6FDF782466533500996C1F /* Car.h */,
+				1A6FDF792466533500996C1F /* Car.m */,
 				1ABDCED52463AA7700A66990 /* PhoneCodeModel.h */,
 				1ABDCEDD2463AA7700A66990 /* PhoneCodeModel.m */,
 				1ABDCED42463AA7700A66990 /* PhoneCodeModel+DAO.h */,
@@ -351,7 +361,9 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				1A6FDF7A2466533500996C1F /* Car.m in Sources */,
 				1ABDCEF32463AA7800A66990 /* ProvincesModel+DAO.m in Sources */,
+				1A6FDF7724664D1300996C1F /* Persons.m in Sources */,
 				1ABDCEAE2463AA0000A66990 /* main.m in Sources */,
 				1ABDCEF92463AA7800A66990 /* FMDatabase.m in Sources */,
 				1ABDCEFD2463AA7800A66990 /* TextViewController.m in Sources */,

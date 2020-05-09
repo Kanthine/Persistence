@@ -1467,6 +1467,7 @@ static NSString *FMDBEscapeSavePointName(NSString *savepointName) {
     return [savepointName stringByReplacingOccurrencesOfString:@"'" withString:@"''"];
 }
 
+// 设置保存点： savepoint a
 - (BOOL)startSavePointWithName:(NSString*)name error:(NSError * _Nullable __autoreleasing *)outErr {
 #if SQLITE_VERSION_NUMBER >= 3007000
     NSParameterAssert(name);
@@ -1481,6 +1482,7 @@ static NSString *FMDBEscapeSavePointName(NSString *savepointName) {
 #endif
 }
 
+//刪除保存点： release savepoint a
 - (BOOL)releaseSavePointWithName:(NSString*)name error:(NSError * _Nullable __autoreleasing *)outErr {
 #if SQLITE_VERSION_NUMBER >= 3007000
     NSParameterAssert(name);
@@ -1495,6 +1497,7 @@ static NSString *FMDBEscapeSavePointName(NSString *savepointName) {
 #endif
 }
 
+//回滚到保存点：rollback transaction to savepoint a
 - (BOOL)rollbackToSavePointWithName:(NSString*)name error:(NSError * _Nullable __autoreleasing *)outErr {
 #if SQLITE_VERSION_NUMBER >= 3007000
     NSParameterAssert(name);

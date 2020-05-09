@@ -31,7 +31,8 @@
         
         NSString *sql = [NSString stringWithFormat:@"SELECT * FROM ProvincesModel WHERE %@ = %@",key,value];
         NSMutableArray *array = [NSMutableArray array];
-        
+        NSLog(@"sql ------ %@",sql);
+
         FMResultSet *resultSet = [database executeQuery:sql];
         if (resultSet) {
             while ([resultSet next]){

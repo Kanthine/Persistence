@@ -126,13 +126,6 @@
  "phoneCode" : "+43"
  },
  {
- "pinYin" : "ao lan qun dao",
- "english" : "Åland Islands",
- "code" : "AX",
- "chinese" : "奥兰群岛",
- "phoneCode" : "+358"
- },
- {
  "pinYin" : "ao men （zhong guo）",
  "english" : "Macau (China)",
  "code" : "MO",
@@ -462,13 +455,6 @@
  "phoneCode" : "+238"
  },
  {
- "pinYin" : "fu ke lan qun dao",
- "english" : "Falkland Islands",
- "code" : "FK",
- "chinese" : "福克兰群岛",
- "phoneCode" : "+500"
- },
- {
  "pinYin" : "gang bi ya",
  "english" : "Gambia",
  "code" : "GM",
@@ -488,13 +474,6 @@
  "code" : "CD",
  "chinese" : "刚果（金）",
  "phoneCode" : "+243"
- },
- {
- "pinYin" : "ge en xi dao",
- "english" : "Guernsey",
- "code" : "GG",
- "chinese" : "格恩西岛",
- "phoneCode" : "+44"
  },
  {
  "pinYin" : "ge lin na da",
@@ -551,13 +530,6 @@
  "code" : "GU",
  "chinese" : "关岛",
  "phoneCode" : "+1 671"
- },
- {
- "pinYin" : "gui ya na",
- "english" : "Guyana",
- "code" : "GY",
- "chinese" : "圭亚那",
- "phoneCode" : "+595"
  },
  {
  "pinYin" : "ha sa ke si tan",
@@ -648,7 +620,7 @@
  "english" : "Canada",
  "code" : "CA",
  "chinese" : "加拿大",
- "phoneCode" : "+1"
+ "phoneCode" : "+1098636"
  },
  {
  "pinYin" : "jia peng",
@@ -698,13 +670,6 @@
  "code" : "KY",
  "chinese" : "开曼群岛",
  "phoneCode" : "+ 345"
- },
- {
- "pinYin" : "ke ke si （ji lin） qun dao",
- "english" : "Cocos (Keeling) Islands",
- "code" : "CC",
- "chinese" : "科科斯（基林）群岛",
- "phoneCode" : "+61"
  },
  {
  "pinYin" : "ke luo de ya",
@@ -812,13 +777,6 @@
  "phoneCode" : "+423"
  },
  {
- "pinYin" : "liu ni wang",
- "english" : "Réunion",
- "code" : "RE",
- "chinese" : "留尼汪",
- "phoneCode" : "+262"
- },
- {
  "pinYin" : "lu sen bao",
  "english" : "Luxembourg",
  "code" : "LU",
@@ -845,13 +803,6 @@
  "code" : "MG",
  "chinese" : "马达加斯加",
  "phoneCode" : "+261"
- },
- {
- "pinYin" : "ma en dao",
- "english" : "Isle of Man",
- "code" : "IM",
- "chinese" : "马恩岛",
- "phoneCode" : "+44"
  },
  {
  "pinYin" : "ma er dai fu",
@@ -1197,20 +1148,6 @@
  "phoneCode" : "+966"
  },
  {
- "pinYin" : "sheng ba tai lei mi",
- "english" : "St. Barthélemy",
- "code" : "BL",
- "chinese" : "圣巴泰勒米",
- "phoneCode" : "+590"
- },
- {
- "pinYin" : "sheng dan dao",
- "english" : "Christmas Island",
- "code" : "CX",
- "chinese" : "圣诞岛",
- "phoneCode" : "+61"
- },
- {
  "pinYin" : "sheng duo mei he pu lin xi bi",
  "english" : "São Tomé & Príncipe",
  "code" : "ST",
@@ -1237,13 +1174,6 @@
  "code" : "LC",
  "chinese" : "圣卢西亚",
  "phoneCode" : "+1 758"
- },
- {
- "pinYin" : "sheng ma ding dao",
- "english" : "St. Martin",
- "code" : "MF",
- "chinese" : "圣马丁岛",
- "phoneCode" : "+590"
  },
  {
  "pinYin" : "sheng ma li nuo",
@@ -1286,13 +1216,6 @@
  "code" : "SI",
  "chinese" : "斯洛文尼亚",
  "phoneCode" : "+386"
- },
- {
- "pinYin" : "si wa er ba he yang ma yan",
- "english" : "Svalbard & Jan Mayen",
- "code" : "SJ",
- "chinese" : "斯瓦尔巴和扬马延",
- "phoneCode" : "+47"
  },
  {
  "pinYin" : "si wei shi lan",
@@ -1636,13 +1559,6 @@
  "code" : "ZM",
  "chinese" : "赞比亚",
  "phoneCode" : "+260"
- },
- {
- "pinYin" : "ze xi dao",
- "english" : "Jersey",
- "code" : "JE",
- "chinese" : "泽西岛",
- "phoneCode" : "+44"
  },
  {
  "pinYin" : "zha de",

@@ -10,6 +10,7 @@
 #import "PhoneCodeModel+DAO.h"
 #import "ProvincesModel+DAO.h"
 #import "DatabaseManagement.h"
+#import "Persons.h"
 
 @interface TextViewController ()
 @property (weak, nonatomic) IBOutlet UITextField *chineseTextField;
@@ -41,23 +42,33 @@
 
 - (IBAction)insertButtonClick:(UIButton *)sender {
     NSLog(@"%s",__func__);
-    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-        [[PhoneCodeModel phoneCodeArray] enumerateObjectsUsingBlock:^(PhoneCodeModel * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
-            [PhoneCodeModel insertModel:obj];
-        }];
-    });
+    
+//    Persons *zhangsan = [[Persons alloc] init];
+//    zhangsan.name = @"zhangsan";
+//    zhangsan.sex = YES;
+//    zhangsan.age = 28;
+//
+//    Car *car = [[Car alloc] init];
+//    car.owners = zhangsan.name;
+//    car.brand = @"dazhong";
+//    car.price = 123456.789;
+//
+//    zhangsan.car = car;
+//    [Persons insertModel:zhangsan];
+//    [Car insertModel:car];
+    
+    [PhoneCodeModel insertModels:[PhoneCodeModel phoneCodeArray]];
     
     [ProvincesModel replaceModels:[ProvincesModel provincesModelArray]];
-    
-    [PhoneCodeModel insertModel:self.phoneCodeModel];
-    
-    [DatabaseManagement info];
+//
+//    [PhoneCodeModel insertModel:self.phoneCodeModel];
+//
+//    [DatabaseManagement info];
 }
 
 - (IBAction)replaceButtonClick:(UIButton *)sender {
     NSLog(@"%s",__func__);
-    [PhoneCodeModel replaceModel:self.phoneCodeModel];
-    
+    [PhoneCodeModel replaceModels:[PhoneCodeModel phoneCodeArray]];
     [DatabaseManagement info];
 }
 
@@ -72,20 +83,27 @@
 
 - (IBAction)queueButtonClick:(UIButton *)sender {
     NSLog(@"%s",__func__);
+    
+    
 //    [PhoneCodeModel getNameWithPhoneCode:self.phoneCodeTextField.text completionBlock:^(NSString * _Nonnull name) {
 //        NSLog(@"name === %@",name);
 //    }];
 //
+    
 //    [ProvincesModel getModelWithKey:@"regionType" value:@"1" completionBlock:^(NSArray<ProvincesModel *> * _Nonnull models) {
-//        NSLog(@"models ----- %@",models);
+//        NSLog(@"ProvincesModels ----- %@",models);
 //    }];
     
-    [PhoneCodeModel getAllDatas:^(NSArray<PhoneCodeModel *> * _Nonnull models) {
-         NSLog(@"models ----- %@",models);
+    [PhoneCodeModel getModelWithKey:@"countryChinese" value:@"中国" completionBlock:^(NSArray<PhoneCodeModel *> * _Nonnull models) {
+        NSLog(@"PhoneCodeModels ===== %@",models);
     }];
     
-    
-    [DatabaseManagement info];
+//    [PhoneCodeModel getAllDatas:^(NSArray<PhoneCodeModel *> * _Nonnull models) {
+//         NSLog(@"models ----- %@",models);
+//    }];
+//
+//
+//    [DatabaseManagement info];
 }
 
 - (IBAction)deleteButtonClick:(UIButton *)sender {

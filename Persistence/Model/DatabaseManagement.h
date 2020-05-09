@@ -43,37 +43,16 @@ NS_ASSUME_NONNULL_BEGIN
  */
 + (void)databaseCurrentThreadInTransaction:(void (^)(FMDatabase *database, BOOL *rollback))block;
 
+/** 清空数据
+ */
 + (void)clearSqlite;
+
+/** 移除数据库中的每张表
+*/
++ (void)dropSqlite;
 
 + (void)info;
 
 @end
 
 NS_ASSUME_NONNULL_END
-
-/** Sql 语句
- *
- * 建表：
- *      @"CREATE TABLE Persons (id INTEGER PRIMARY KEY,name TEXT UNIQUE NOT NULL,age INTEGER)"
- *      主键：PRIMARY KEY，数据类型为 INTEGER
- *      非空：NOT NULL
- *      唯一性：UNIQUE
- *
- * 插入：若有唯一键，则只能插入一次！再次插入，插入失败！
- *      @"INSERT INTO Persons (name,age) VALUES (? , ?)",@"张三",@(69)
- *
- * 替代：若没有唯一键，则插入！若有唯一键，则覆盖具有唯一键的数据！
- *      @"REPLACE INTO Persons (name,age) VALUES (? , ?)",@"张三",@(69)
- *
- * 更新：修改表中满足条件的数据
- *      如果表中有多条 age = 12，则全部修改
- *      被修改的数据如果具有唯一性，则只能修改其中一条数据！
- *     @"UPDATE Persons SET name = ? WHERE age = ?",@"李四",@(12)
- *
- * 删除：删除表中满足条件的数据
- *      如果表中有多条 age  < 20，则全部删除
- *    @"DELETE FROM Persons WHERE age < ?",@(20)
- *
- * 移除表：移除数据库中的某张表
- *      @"DROP TABLE IF EXISTS PhoneCodeModel"
- */

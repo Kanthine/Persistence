@@ -14,7 +14,7 @@
 + (void)creatTable{
     [DatabaseManagement databaseCurrentThreadInTransaction:^(FMDatabase *database, BOOL *rollback) {
         if (![database tableExists:@"PhoneCodeModel"]){
-            [database executeUpdate:@"CREATE TABLE PhoneCodeModel (id INTEGER PRIMARY KEY,phoneCode TEXT UNIQUE NOT NULL,countryCode TEXT, countryPinYin TEXT, countryEnglish TEXT, countryChinese TEXT)"];
+            [database executeUpdate:@"CREATE TABLE PhoneCodeModel (id INTEGER PRIMARY KEY,phoneCode TEXT UNIQUE NOT NULL,countryCode TEXT, countryPinYin TEXT, countryEnglish TEXT, countryChinese TEXT,time DATE DEFAULT CURRENT_TIMESTAMP)"];
         }
     }];
 }
@@ -33,22 +33,31 @@
 }
 
 + (void)getModelWithKey:(NSString *)key value:(NSString *)value completionBlock:(void(^)(NSArray<PhoneCodeModel *> *models))block{
+    
     [DatabaseManagement databaseChildThreadInTransaction:^(FMDatabase *database, BOOL *rollback) {
         
         NSMutableArray *array = [NSMutableArray array];
-        
-        FMResultSet *resultSet = [database executeQuery:@"SELECT * FROM PhoneCodeModel WHERE ? = ?",key,value];
-        while ([resultSet next]){
-            PhoneCodeModel *model = [[PhoneCodeModel alloc] init];
-            model.countryCode = [resultSet stringForColumn:@"countryCode"];
-            model.countryPinYin = [resultSet stringForColumn:@"countryPinYin"];
-            model.countryEnglish = [resultSet stringForColumn:@"countryEnglish"];
-            model.phoneCode = [resultSet stringForColumn:@"phoneCode"];
-            model.countryChinese = [resultSet stringForColumn:@"countryChinese"];
-            [array addObject:model];
+        NSString *sql = [NSString stringWithFormat:@"SELECT * FROM PhoneCodeModel WHERE %@ = '%@'",key,value];
+        NSLog(@"sql ------ %@",sql);
+        FMResultSet *resultSet = [database executeQuery:@"SELECT * FROM PhoneCodeModel WHERE ? = '?'",key,value];
+        if (resultSet) {
+            
+            while ([resultSet next]){
+                PhoneCodeModel *model = [[PhoneCodeModel alloc] init];
+                 model.countryCode = [resultSet stringForColumn:@"countryCode"];
+                 model.countryPinYin = [resultSet stringForColumn:@"countryPinYin"];
+                 model.countryEnglish = [resultSet stringForColumn:@"countryEnglish"];
+                 model.phoneCode = [resultSet stringForColumn:@"phoneCode"];
+                 model.countryChinese = [resultSet stringForColumn:@"countryChinese"];
+                 
+                 NSLog(@"model ------ %@",model);
+
+                 [array addObject:model];
+            }
+            [resultSet close];
+        }else{
+            NSLog(@"lastError ------ %@",database.lastError);
         }
-        [resultSet close];
-        
        dispatch_async(dispatch_get_main_queue(), ^{
             block(array);
         });
@@ -111,10 +120,21 @@
 
 + (void)replaceModels:(NSArray<PhoneCodeModel *> *)modelArray{
     [DatabaseManagement databaseChildThreadInTransaction:^(FMDatabase *database, BOOL *rollback) {
+
+        NSMutableString *string = [[NSMutableString alloc] init];
+
         [modelArray enumerateObjectsUsingBlock:^(PhoneCodeModel * _Nonnull model, NSUInteger idx, BOOL * _Nonnull stop) {
-            [database executeUpdate:@"REPLACE INTO PhoneCodeModel (phoneCode,countryCode,countryPinYin,countryEnglish,countryChinese) VALUES (? , ? , ? , ? , ?)",
-             model.phoneCode,model.countryCode,model.countryPinYin,model.countryEnglish,model.countryChinese];
+            if (idx) {
+                [string appendFormat:@",('%@' , '%@' , '%@' , '%@' , '%@')" ,model.phoneCode,model.countryCode,NSNull.null,model.countryEnglish,model.countryChinese];
+            }else{
+                [string appendFormat:@"('%@' , '%@' , '%@' , '%@' , '%@')" ,model.phoneCode,model.countryCode,model.countryPinYin,model.countryEnglish,model.countryChinese];
+            }
         }];
+        NSString *sql = [NSString stringWithFormat:@"REPLACE INTO PhoneCodeModel (phoneCode,countryCode,countryPinYin,countryEnglish,countryChinese) VALUES %@",string];
+        BOOL result = [database executeUpdate:sql];
+        if (!result) {
+            NSLog(@"error ===== %@",database.lastError);
+        }
     }];
 }
 

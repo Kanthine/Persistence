@@ -119,7 +119,8 @@ NSString *groupSqliteFile(void){
     [PhoneCodeModel creatTable];
 }
 
-/** 退出登录，移除缓存数据
+
+/** 移除缓数据
  */
 + (void)clearSqlite{
     //如果还有针对数据库的操作，则全部取消
@@ -130,24 +131,38 @@ NSString *groupSqliteFile(void){
     [DatabaseManagement databaseChildThreadInTransaction:^(FMDatabase *database, BOOL *rollback) {
         [database interrupt];//中断数据库操作
         
-        NSMutableDictionary *muDict = [NSMutableDictionary dictionary];
+        FMResultSet *resultSet = database.getSchema;
+        while ([resultSet next]){
+            NSString *tbl_name = [resultSet stringForColumn:@"tbl_name"];
+            if (tbl_name) {
+                NSString *deleteSql = [NSString stringWithFormat:@"DELETE FROM %@",tbl_name];
+                [database executeUpdate:deleteSql];
+            }
+        }
+        [resultSet close];
+
+    }];
+}
+
++ (void)dropSqlite{
+    if ([self shareThreadQueue].operationCount > 0){
+        [[self shareThreadQueue] cancelAllOperations];
+    }
+    
+    [DatabaseManagement databaseChildThreadInTransaction:^(FMDatabase *database, BOOL *rollback) {
+        [database interrupt];//中断数据库操作
         
         FMResultSet *resultSet = database.getSchema;
         while ([resultSet next]){
             NSString *tbl_name = [resultSet stringForColumn:@"tbl_name"];
-            NSString *sql = [resultSet stringForColumn:@"sql"];
-            if (tbl_name && sql) {
-                [muDict setObject:sql forKey:tbl_name];
+            if (tbl_name) {
+                NSString *dropSql = [NSString stringWithFormat:@"DROP TABLE IF EXISTS %@",tbl_name];
+                [database executeUpdate:dropSql];
             }
         }
         [resultSet close];
-        
-        [muDict enumerateKeysAndObjectsUsingBlock:^(NSString*  _Nonnull tbl_name, NSString*  _Nonnull sql, BOOL * _Nonnull stop) {
-            NSString *dropSql = [NSString stringWithFormat:@"DROP TABLE IF EXISTS %@",tbl_name];
-            [database executeUpdate:dropSql];
-            [database executeUpdate:sql];
-        }];
     }];
+
 }
 
 + (void)removeUselessFile{
@@ -158,9 +173,16 @@ NSString *groupSqliteFile(void){
     NSLog(@"vfsName ---- %@",DatabaseManagement.databaseQueue.vfsName);
 
     [DatabaseManagement.databaseQueue inTransaction:^(FMDatabase *db, BOOL *rollback) {
+        NSDateFormatter *dateFormatter = [[NSDateFormatter alloc] init];
+        dateFormatter.dateFormat = @"yyyy-MM-dd HH:mm:ss";
+//        dateFormatter.timeZone = [NSTimeZone timeZoneForSecondsFromGMT:0];
+        dateFormatter.timeZone = [NSTimeZone systemTimeZone];//系统所在时区
+        dateFormatter.locale = [[NSLocale alloc] initWithLocaleIdentifier:@"zh-CN"];
+        [db setDateFormat:dateFormatter];
         
-        
-        NSLog(@"lastInsertRowId -- %d",db.lastInsertRowId);
+        NSLog(@"hasDateFormatter -- %d",db.hasDateFormatter);
+
+        NSLog(@"lastInsertRowId -- %lld",db.lastInsertRowId);
         NSLog(@"changes -- %d",db.changes);
 
         NSLog(@"goodConnection -- %d",db.goodConnection);
