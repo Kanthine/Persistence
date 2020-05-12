@@ -118,7 +118,7 @@ NSString *const kPhoneCodeModelCountryChinese = @"chinese";
 
 + (NSMutableArray<PhoneCodeModel *> *)phoneCodeArray{
     NSMutableArray *phoneCodeArray = [NSMutableArray array];
-    NSString *filePath = [[NSBundle bundleWithPath:[[NSBundle mainBundle] pathForResource:@"Resource" ofType:@"bundle"]] pathForResource:@"PhoneCode" ofType:@"json"];
+    NSString *filePath = [[NSBundle bundleWithPath:[[NSBundle mainBundle] pathForResource:@"Resource" ofType:@"bundle"]] pathForResource:@"PhoneCode_copy" ofType:@"json"];
 
     NSData *data = [NSData dataWithContentsOfFile:filePath];
     id json = [NSJSONSerialization JSONObjectWithData:data options:kNilOptions error:nil];

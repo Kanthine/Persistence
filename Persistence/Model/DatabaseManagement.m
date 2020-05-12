@@ -187,7 +187,7 @@ NSString *groupSqliteFile(void){
 
         NSLog(@"goodConnection -- %d",db.goodConnection);
 
-        NSLog(@"cachedStatements ---- %@",db.cachedStatements);
+//        NSLog(@"cachedStatements ---- %@",db.cachedStatements);
         
         NSLog(@"userVersion ---- %u",db.userVersion);
         NSLog(@"applicationID -- %d",db.applicationID);

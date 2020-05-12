@@ -115,6 +115,9 @@ typedef NS_ENUM(int, FMDBCheckpointMode) {
  * 有关临时数据库和内存数据库的更多信息，请阅读有关该主题的sqlite文档 (http://www.sqlite.org/inmemorydb.html))
  *
  * @return 创建成功，则返回 FMDatabase 对象，失败返回 nil
+ *
+ * @note 本质上只是给了数据库一个名字，并没有真实创建或者获取数据库。
+ *       -open 方法才是真正获取到数据库，其本质调用SQLite的 sqlite3_open() 函数
  */
 + (instancetype)databaseWithPath:(NSString * _Nullable)inPath;
 + (instancetype)databaseWithURL:(NSURL * _Nullable)url;
@@ -130,12 +133,10 @@ typedef NS_ENUM(int, FMDBCheckpointMode) {
 /// 数据库是否打开
 @property (nonatomic) BOOL isOpen;
 
-/** 打开数据库进行读写操作，如果数据库不存在，就创建它
+/** 打开数据库进行读写操作，如果数据库不存在，调用sqlite3_open()函数创建它
  * @return 打开则返回 YES，失败返回 NO；
  *
  * @see [sqlite3_open()](http://sqlite.org/c3ref/open.html)
- * @see openWithFlags:
- * @see close
  */
 - (BOOL)open;
 
@@ -150,8 +151,6 @@ typedef NS_ENUM(int, FMDBCheckpointMode) {
  *
  * @return 打开则返回 YES，失败返回 NO；
  * @see [sqlite3_open_v2()](http://sqlite.org/c3ref/open.html)
- * @see open
- * @see close
  */
 - (BOOL)openWithFlags:(int)flags vfs:(NSString * _Nullable)vfsName;
 - (BOOL)openWithFlags:(int)flags;
@@ -161,12 +160,10 @@ typedef NS_ENUM(int, FMDBCheckpointMode) {
  * @return 关闭则返回 YES，失败返回 NO；
  *
  * @see [sqlite3_close()](http://sqlite.org/c3ref/close.html)
- * @see open
- * @see openWithFlags:
  */
 - (BOOL)close;
 
-/** 确认数据库是否有良好的连接
+/** 确认数据库是否有良好的连接：
  *   1、数据库是打开的；
  *   2、如果打开，将尝试一个简单的 SELECT 语句并确认成功
  * @return 一切顺利则返回 YES；否则返回 NO
@@ -176,6 +173,7 @@ typedef NS_ENUM(int, FMDBCheckpointMode) {
 
 ///----------------------
 /// @name 执行更新
+/// 成功返回 YES。如果失败，可以调用 -lastError、 -lastErrorCod 或 -lastErrorMessage 获取失败信息；
 ///----------------------
 
 /** 执行单个更新语句
@@ -186,9 +184,6 @@ typedef NS_ENUM(int, FMDBCheckpointMode) {
  * 此方法执行单个SQL update语句(即不返回结果的任何SQL，如 update、INSERT 或 DELETE )。
  * 该方法使用 sqlite3_prepare_v2()，sqlite3_bind()将值绑定到 '?' 占位符与可选的参数列表，和sqlite_step() 执行更新。
  *
- *
- * @return 成功返回 YES。如果失败，可以调用 -lastError、 -lastErrorCod 或 -lastErrorMessage 获取失败信息；
- *
  * @note 使用 '?' 占位符将值参数绑定到该位置；这种方法比 [NSString stringWithFormat:] 手动构建 SQL 语句更安全，如果值碰巧包含需要引用的任何字符，则可能会出现问题。
  * @note 由于Swift和Objective-C变量实现之间的不兼容性，在Swift中需要使用 executeUpdate:values: 代替
  *
@@ -198,7 +193,6 @@ typedef NS_ENUM(int, FMDBCheckpointMode) {
 - (BOOL)executeUpdate:(NSString*)sql, ...;
 
 - (BOOL)update:(NSString*)sql withErrorAndBindings:(NSError * _Nullable __autoreleasing *)outErr, ...  __deprecated_msg("Use executeUpdate:withErrorAndBindings: instead");;
-
 
 /** 执行单个更新语句
  * @param format 要执行的SQL，带有'%@'、'%d'等样式的转义序列；
@@ -214,7 +208,6 @@ typedef NS_ENUM(int, FMDBCheckpointMode) {
  *
  * @note '%@'、'%d'等样式的转义序列只允许使用在SQLite 语句 占位符`?` 的地方。不能用于表名、列名或任何其他非值上下文；此方法也不能与 pragma 语句之类的语句一起使用。
  */
-
 - (BOOL)executeUpdateWithFormat:(NSString *)format, ... NS_FORMAT_FUNCTION(1,2);
 
 
@@ -254,19 +247,16 @@ typedef NS_ENUM(int, FMDBCheckpointMode) {
 - (BOOL)executeStatements:(NSString *)sql withResultBlock:(__attribute__((noescape)) FMDBExecuteStatementsCallbackBlock _Nullable)block;
 - (BOOL)executeStatements:(NSString *)sql;
 
-
-/** 最后插入的一行的rowid
- * @note rowid 是SQLite表中每个条目都有一个唯一的64位带符号整数键；如果表的列的类型是‘INTEGER PRIMARY KEY’，那么该列就是rowid的另一个别名。
- * @note 如果数据库连接上从未发生过成功的 INSERT，则返回0。
+/** 获取最后插入一行的主键 id
+ * @note 如果数据库连接上从未发生过成功的 INSERT，则返回 0。
  * @see [sqlite3_last_insert_rowid()](http://sqlite.org/c3ref/last_insert_rowid.html)
  */
 @property (nonatomic, readonly) int64_t lastInsertRowId;
 
-/** 由先前的SQL语句更改的行数
+/** 前一个 SQL 语句更改了多少行
  * @note 只计算由INSERT、UPDATE或DELETE语句直接指定的更改的数据库行数
  * @see [sqlite3_changes()](http://sqlite.org/c3ref/changes.html)
  */
-
 @property (nonatomic, readonly) int changes;
 
 

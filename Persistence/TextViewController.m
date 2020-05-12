@@ -94,13 +94,13 @@
 //        NSLog(@"ProvincesModels ----- %@",models);
 //    }];
     
-    [PhoneCodeModel getModelWithKey:@"countryChinese" value:@"中国" completionBlock:^(NSArray<PhoneCodeModel *> * _Nonnull models) {
-        NSLog(@"PhoneCodeModels ===== %@",models);
-    }];
-    
-//    [PhoneCodeModel getAllDatas:^(NSArray<PhoneCodeModel *> * _Nonnull models) {
-//         NSLog(@"models ----- %@",models);
+//    [PhoneCodeModel getModelWithKey:@"countryChinese" value:@"中国" completionBlock:^(NSArray<PhoneCodeModel *> * _Nonnull models) {
+//        NSLog(@"PhoneCodeModels ===== %@",models);
 //    }];
+    
+    [PhoneCodeModel getAllDatas:^(NSArray<PhoneCodeModel *> * _Nonnull models) {
+//         NSLog(@"models ----- %@",models);
+    }];
 //
 //
 //    [DatabaseManagement info];

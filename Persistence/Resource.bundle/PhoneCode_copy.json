@@ -1,0 +1,1599 @@
+[
+ {
+ "pinYin" : "1 a er ba ni ya",
+ "english" : "Albania",
+ "code" : "AL",
+ "chinese" : "阿尔巴尼亚",
+ "phoneCode" : "+355"
+ },
+ {
+ "pinYin" : "a er 2 ji li ya",
+ "english" : "Algeria",
+ "code" : "DZ",
+ "chinese" : "阿尔及利亚",
+ "phoneCode" : "+213"
+ },
+ {
+ "pinYin" : "a fu han 3",
+ "english" : "Afghanistan",
+ "code" : "AF",
+ "chinese" : "阿富汗",
+ "phoneCode" : "+93"
+ },
+ {
+ "pinYin" : "987",
+ "english" : "Argentina",
+ "code" : "AR",
+ "chinese" : "阿根廷",
+ "phoneCode" : "+54"
+ },
+ {
+ "pinYin" : "4G",
+ "english" : "United Arab Emirates",
+ "code" : "AE",
+ "chinese" : "阿拉伯联合酋长国",
+ "phoneCode" : "+971"
+ },
+ {
+ "pinYin" : "4G4",
+ "english" : "Aruba",
+ "code" : "AW",
+ "chinese" : "阿鲁巴",
+ "phoneCode" : "+297"
+ },
+ {
+ "pinYin" : "G5",
+ "english" : "Oman",
+ "code" : "OM",
+ "chinese" : "阿曼",
+ "phoneCode" : "+968"
+ },
+ {
+ "pinYin" : "G5G",
+ "english" : "Azerbaijan",
+ "code" : "AZ",
+ "chinese" : "阿塞拜疆",
+ "phoneCode" : "+994"
+ },
+ {
+ "pinYin" : "G6G6",
+ "english" : "Ireland",
+ "code" : "IE",
+ "chinese" : "爱尔兰",
+ "phoneCode" : "+353"
+ },
+ {
+ "pinYin" : "ai ji",
+ "english" : "Egypt",
+ "code" : "EG",
+ "chinese" : "埃及",
+ "phoneCode" : "+20"
+ },
+ {
+ "pinYin" : "ai sai e bi ya",
+ "english" : "Ethiopia",
+ "code" : "ET",
+ "chinese" : "埃塞俄比亚",
+ "phoneCode" : "+251"
+ },
+ {
+ "pinYin" : "ai sha ni ya",
+ "english" : "Estonia",
+ "code" : "EE",
+ "chinese" : "爱沙尼亚",
+ "phoneCode" : "+372"
+ },
+ {
+ "pinYin" : "an dao er",
+ "english" : "Andorra",
+ "code" : "AD",
+ "chinese" : "安道尔",
+ "phoneCode" : "+376"
+ },
+ {
+ "pinYin" : "an ge la",
+ "english" : "Angola",
+ "code" : "AO",
+ "chinese" : "安哥拉",
+ "phoneCode" : "+244"
+ },
+ {
+ "pinYin" : "an gui la",
+ "english" : "Anguilla",
+ "code" : "AI",
+ "chinese" : "安圭拉",
+ "phoneCode" : "+1 264"
+ },
+ {
+ "pinYin" : "an ti gua he ba bu da",
+ "english" : "Antigua & Barbuda",
+ "code" : "AG",
+ "chinese" : "安提瓜和巴布达",
+ "phoneCode" : "+1268"
+ },
+ {
+ "pinYin" : "ao da li ya",
+ "english" : "Australia",
+ "code" : "AU",
+ "chinese" : "澳大利亚",
+ "phoneCode" : "+61"
+ },
+ {
+ "pinYin" : "ao de li",
+ "english" : "Austria",
+ "code" : "AT",
+ "chinese" : "奥地利",
+ "phoneCode" : "+43"
+ },
+ {
+ "pinYin" : "ao men （zhong guo）",
+ "english" : "Macau (China)",
+ "code" : "MO",
+ "chinese" : "澳门（中国）",
+ "phoneCode" : "+853"
+ },
+ {
+ "pinYin" : "ba ba duo si",
+ "english" : "Barbados",
+ "code" : "BB",
+ "chinese" : "巴巴多斯",
+ "phoneCode" : "+1 246"
+ },
+ {
+ "pinYin" : "ba bu ya xin ji nei ya",
+ "english" : "Papua New Guinea",
+ "code" : "PG",
+ "chinese" : "巴布亚新几内亚",
+ "phoneCode" : "+675"
+ },
+ {
+ "pinYin" : "ba ha ma",
+ "english" : "Bahamas",
+ "code" : "BS",
+ "chinese" : "巴哈马",
+ "phoneCode" : "+1 242"
+ },
+ {
+ "pinYin" : "ba ji si tan",
+ "english" : "Pakistan",
+ "code" : "PK",
+ "chinese" : "巴基斯坦",
+ "phoneCode" : "+92"
+ },
+ {
+ "pinYin" : "ba la gui",
+ "english" : "Paraguay",
+ "code" : "PY",
+ "chinese" : "巴拉圭",
+ "phoneCode" : "+595"
+ },
+ {
+ "pinYin" : "ba lei si tan ling tu",
+ "english" : "Palestinian Territories",
+ "code" : "PS",
+ "chinese" : "巴勒斯坦领土",
+ "phoneCode" : "+970"
+ },
+ {
+ "pinYin" : "ba lin",
+ "english" : "Bahrain",
+ "code" : "BH",
+ "chinese" : "巴林",
+ "phoneCode" : "+973"
+ },
+ {
+ "pinYin" : "ba na ma",
+ "english" : "Panama",
+ "code" : "PA",
+ "chinese" : "巴拿马",
+ "phoneCode" : "+507"
+ },
+ {
+ "pinYin" : "ba xi",
+ "english" : "Brazil",
+ "code" : "BR",
+ "chinese" : "巴西",
+ "phoneCode" : "+55"
+ },
+ {
+ "pinYin" : "bai e luo si",
+ "english" : "Belarus",
+ "code" : "BY",
+ "chinese" : "白俄罗斯",
+ "phoneCode" : "+375"
+ },
+ {
+ "pinYin" : "bai mu da",
+ "english" : "Bermuda",
+ "code" : "BM",
+ "chinese" : "百慕大",
+ "phoneCode" : "+1 441"
+ },
+ {
+ "pinYin" : "bao jia li ya",
+ "english" : "Bulgaria",
+ "code" : "BG",
+ "chinese" : "保加利亚",
+ "phoneCode" : "+359"
+ },
+ {
+ "pinYin" : "bei ma li ya na qun dao",
+ "english" : "Northern Mariana Islands",
+ "code" : "MP",
+ "chinese" : "北马里亚纳群岛",
+ "phoneCode" : "+1 670"
+ },
+ {
+ "pinYin" : "bei ning",
+ "english" : "Benin",
+ "code" : "BJ",
+ "chinese" : "贝宁",
+ "phoneCode" : "+229"
+ },
+ {
+ "pinYin" : "bi li shi",
+ "english" : "Belgium",
+ "code" : "BE",
+ "chinese" : "比利时",
+ "phoneCode" : "+32"
+ },
+ {
+ "pinYin" : "bi lu",
+ "english" : "Peru",
+ "code" : "PE",
+ "chinese" : "秘鲁",
+ "phoneCode" : "+51"
+ },
+ {
+ "pinYin" : "bing dao",
+ "english" : "Iceland",
+ "code" : "IS",
+ "chinese" : "冰岛",
+ "phoneCode" : "+354"
+ },
+ {
+ "pinYin" : "bo ci wa na",
+ "english" : "Botswana",
+ "code" : "BW",
+ "chinese" : "博茨瓦纳",
+ "phoneCode" : "+267"
+ },
+ {
+ "pinYin" : "bo duo li ge",
+ "english" : "Puerto Rico",
+ "code" : "PR",
+ "chinese" : "波多黎各",
+ "phoneCode" : "+1 939"
+ },
+ {
+ "pinYin" : "bo lan",
+ "english" : "Poland",
+ "code" : "PL",
+ "chinese" : "波兰",
+ "phoneCode" : "+48"
+ },
+ {
+ "pinYin" : "bo li wei ya",
+ "english" : "Bolivia",
+ "code" : "BO",
+ "chinese" : "玻利维亚",
+ "phoneCode" : "+591"
+ },
+ {
+ "pinYin" : "bo li zi",
+ "english" : "Belize",
+ "code" : "BZ",
+ "chinese" : "伯利兹",
+ "phoneCode" : "+501"
+ },
+ {
+ "pinYin" : "bo si ni ya he hei sai ge wei na",
+ "english" : "Bosnia & Herzegovina",
+ "code" : "BA",
+ "chinese" : "波斯尼亚和黑塞哥维那",
+ "phoneCode" : "+387"
+ },
+ {
+ "pinYin" : "bu dan",
+ "english" : "Bhutan",
+ "code" : "BT",
+ "chinese" : "不丹",
+ "phoneCode" : "+975"
+ },
+ {
+ "pinYin" : "bu ji na fa suo",
+ "english" : "Burkina Faso",
+ "code" : "BF",
+ "chinese" : "布基纳法索",
+ "phoneCode" : "+226"
+ },
+ {
+ "pinYin" : "bu long di",
+ "english" : "Burundi",
+ "code" : "BI",
+ "chinese" : "布隆迪",
+ "phoneCode" : "+257"
+ },
+ {
+ "pinYin" : "chao xian",
+ "english" : "North Korea",
+ "code" : "KP",
+ "chinese" : "朝鲜",
+ "phoneCode" : "+850"
+ },
+ {
+ "pinYin" : "chi dao ji nei ya",
+ "english" : "Equatorial Guinea",
+ "code" : "GQ",
+ "chinese" : "赤道几内亚",
+ "phoneCode" : "+240"
+ },
+ {
+ "pinYin" : "dan mai",
+ "english" : "Denmark",
+ "code" : "DK",
+ "chinese" : "丹麦",
+ "phoneCode" : "+45"
+ },
+ {
+ "pinYin" : "de guo",
+ "english" : "Germany",
+ "code" : "DE",
+ "chinese" : "德国",
+ "phoneCode" : "+49"
+ },
+ {
+ "pinYin" : "dong di wen",
+ "english" : "Timor-Leste",
+ "code" : "TL",
+ "chinese" : "东帝汶",
+ "phoneCode" : "+670"
+ },
+ {
+ "pinYin" : "duo ge",
+ "english" : "Togo",
+ "code" : "TG",
+ "chinese" : "多哥",
+ "phoneCode" : "+228"
+ },
+ {
+ "pinYin" : "duo mi ni jia gong he guo",
+ "english" : "Dominican Republic",
+ "code" : "DO",
+ "chinese" : "多米尼加共和国",
+ "phoneCode" : "+1 849"
+ },
+ {
+ "pinYin" : "duo mi ni ke",
+ "english" : "Dominica",
+ "code" : "DM",
+ "chinese" : "多米尼克",
+ "phoneCode" : "+1 767"
+ },
+ {
+ "pinYin" : "e gua duo er",
+ "english" : "Ecuador",
+ "code" : "EC",
+ "chinese" : "厄瓜多尔",
+ "phoneCode" : "+593"
+ },
+ {
+ "pinYin" : "e li te li ya",
+ "english" : "Eritrea",
+ "code" : "ER",
+ "chinese" : "厄立特里亚",
+ "phoneCode" : "+291"
+ },
+ {
+ "pinYin" : "e luo si",
+ "english" : "Russia",
+ "code" : "RU",
+ "chinese" : "俄罗斯",
+ "phoneCode" : "+7"
+ },
+ {
+ "pinYin" : "fa guo",
+ "english" : "France",
+ "code" : "FR",
+ "chinese" : "法国",
+ "phoneCode" : "+33"
+ },
+ {
+ "pinYin" : "fa luo qun dao",
+ "english" : "Faroe Islands",
+ "code" : "FO",
+ "chinese" : "法罗群岛",
+ "phoneCode" : "+298"
+ },
+ {
+ "pinYin" : "fa shu bo li ni xi ya",
+ "english" : "French Polynesia",
+ "code" : "PF",
+ "chinese" : "法属波利尼西亚",
+ "phoneCode" : "+689"
+ },
+ {
+ "pinYin" : "fa shu gui ya na",
+ "english" : "French Guiana",
+ "code" : "GF",
+ "chinese" : "法属圭亚那",
+ "phoneCode" : "+594"
+ },
+ {
+ "pinYin" : "fan di gang",
+ "english" : "Vatican City",
+ "code" : "VA",
+ "chinese" : "梵蒂冈",
+ "phoneCode" : "+379"
+ },
+ {
+ "pinYin" : "fei ji",
+ "english" : "Fiji",
+ "code" : "FJ",
+ "chinese" : "斐济",
+ "phoneCode" : "+679"
+ },
+ {
+ "pinYin" : "fei lu bin",
+ "english" : "Philippines",
+ "code" : "PH",
+ "chinese" : "菲律宾",
+ "phoneCode" : "+63"
+ },
+ {
+ "pinYin" : "fen lan",
+ "english" : "Finland",
+ "code" : "FI",
+ "chinese" : "芬兰",
+ "phoneCode" : "+358"
+ },
+ {
+ "pinYin" : "fu de jiao",
+ "english" : "Cape Verde",
+ "code" : "CV",
+ "chinese" : "佛得角",
+ "phoneCode" : "+238"
+ },
+ {
+ "pinYin" : "gang bi ya",
+ "english" : "Gambia",
+ "code" : "GM",
+ "chinese" : "冈比亚",
+ "phoneCode" : "+220"
+ },
+ {
+ "pinYin" : "gang guo （bu）",
+ "english" : "Congo - Brazzaville",
+ "code" : "CG",
+ "chinese" : "刚果（布）",
+ "phoneCode" : "+242"
+ },
+ {
+ "pinYin" : "gang guo （jin）",
+ "english" : "Congo - Kinshasa",
+ "code" : "CD",
+ "chinese" : "刚果（金）",
+ "phoneCode" : "+243"
+ },
+ {
+ "pinYin" : "ge lin na da",
+ "english" : "Grenada",
+ "code" : "GD",
+ "chinese" : "格林纳达",
+ "phoneCode" : "+1 473"
+ },
+ {
+ "pinYin" : "ge ling lan",
+ "english" : "Greenland",
+ "code" : "GL",
+ "chinese" : "格陵兰",
+ "phoneCode" : "+299"
+ },
+ {
+ "pinYin" : "ge lu ji ya",
+ "english" : "Georgia",
+ "code" : "GE",
+ "chinese" : "格鲁吉亚",
+ "phoneCode" : "+995"
+ },
+ {
+ "pinYin" : "ge lun bi ya",
+ "english" : "Colombia",
+ "code" : "CO",
+ "chinese" : "哥伦比亚",
+ "phoneCode" : "+57"
+ },
+ {
+ "pinYin" : "ge si da li jia",
+ "english" : "Costa Rica",
+ "code" : "CR",
+ "chinese" : "哥斯达黎加",
+ "phoneCode" : "+506"
+ },
+ {
+ "pinYin" : "gu ba",
+ "english" : "Cuba",
+ "code" : "CU",
+ "chinese" : "古巴",
+ "phoneCode" : "+53"
+ },
+ {
+ "pinYin" : "gua de luo pu",
+ "english" : "Guadeloupe",
+ "code" : "GP",
+ "chinese" : "瓜德罗普",
+ "phoneCode" : "+590"
+ },
+ {
+ "pinYin" : "guan dao",
+ "english" : "Guam",
+ "code" : "GU",
+ "chinese" : "关岛",
+ "phoneCode" : "+1 671"
+ },
+ {
+ "pinYin" : "ha sa ke si tan",
+ "english" : "Kazakhstan",
+ "code" : "KZ",
+ "chinese" : "哈萨克斯坦",
+ "phoneCode" : "+7 7"
+ },
+ {
+ "pinYin" : "hai de",
+ "english" : "Haiti",
+ "code" : "HT",
+ "chinese" : "海地",
+ "phoneCode" : "+509"
+ },
+ {
+ "pinYin" : "han guo",
+ "english" : "South Korea",
+ "code" : "KR",
+ "chinese" : "韩国",
+ "phoneCode" : "+82"
+ },
+ {
+ "pinYin" : "he lan",
+ "english" : "Netherlands",
+ "code" : "NL",
+ "chinese" : "荷兰",
+ "phoneCode" : "+31"
+ },
+ {
+ "pinYin" : "hei shan",
+ "english" : "Montenegro",
+ "code" : "ME",
+ "chinese" : "黑山",
+ "phoneCode" : "+382"
+ },
+ {
+ "pinYin" : "hong dou la si",
+ "english" : "Honduras",
+ "code" : "HN",
+ "chinese" : "洪都拉斯",
+ "phoneCode" : "+504"
+ },
+ {
+ "pinYin" : "ji bu ti",
+ "english" : "Djibouti",
+ "code" : "DJ",
+ "chinese" : "吉布提",
+ "phoneCode" : "+253"
+ },
+ {
+ "pinYin" : "ji er ji si si tan",
+ "english" : "Kyrgyzstan",
+ "code" : "KG",
+ "chinese" : "吉尔吉斯斯坦",
+ "phoneCode" : "+996"
+ },
+ {
+ "pinYin" : "ji li ba si",
+ "english" : "Kiribati",
+ "code" : "KI",
+ "chinese" : "基里巴斯",
+ "phoneCode" : "+686"
+ },
+ {
+ "pinYin" : "ji nei ya",
+ "english" : "Guinea",
+ "code" : "GN",
+ "chinese" : "几内亚",
+ "phoneCode" : "+224"
+ },
+ {
+ "pinYin" : "ji nei ya bi shao",
+ "english" : "Guinea-Bissau",
+ "code" : "GW",
+ "chinese" : "几内亚比绍",
+ "phoneCode" : "+245"
+ },
+ {
+ "pinYin" : "jia na",
+ "english" : "Ghana",
+ "code" : "GH",
+ "chinese" : "加纳",
+ "phoneCode" : "+233"
+ },
+ {
+ "pinYin" : "jia na da",
+ "english" : "Canada",
+ "code" : "CA",
+ "chinese" : "加拿大",
+ "phoneCode" : "+1098636"
+ },
+ {
+ "pinYin" : "jia peng",
+ "english" : "Gabon",
+ "code" : "GA",
+ "chinese" : "加蓬",
+ "phoneCode" : "+241"
+ },
+ {
+ "pinYin" : "jian bu zhai",
+ "english" : "Cambodia",
+ "code" : "KH",
+ "chinese" : "柬埔寨",
+ "phoneCode" : "+855"
+ },
+ {
+ "pinYin" : "jie ke",
+ "english" : "Czechia",
+ "code" : "CZ",
+ "chinese" : "捷克",
+ "phoneCode" : "+420"
+ },
+ {
+ "pinYin" : "jin ba bu wei",
+ "english" : "Zimbabwe",
+ "code" : "ZW",
+ "chinese" : "津巴布韦",
+ "phoneCode" : "+263"
+ },
+ {
+ "pinYin" : "ka mai long",
+ "english" : "Cameroon",
+ "code" : "CM",
+ "chinese" : "喀麦隆",
+ "phoneCode" : "+237"
+ },
+ {
+ "pinYin" : "ka ta er",
+ "english" : "Qatar",
+ "code" : "QA",
+ "chinese" : "卡塔尔",
+ "phoneCode" : "+974"
+ },
+ {
+ "pinYin" : "kai man qun dao",
+ "english" : "Cayman Islands",
+ "code" : "KY",
+ "chinese" : "开曼群岛",
+ "phoneCode" : "+ 345"
+ },
+ {
+ "pinYin" : "ke luo de ya",
+ "english" : "Croatia",
+ "code" : "HR",
+ "chinese" : "克罗地亚",
+ "phoneCode" : "+385"
+ },
+ {
+ "pinYin" : "ke mo luo",
+ "english" : "Comoros",
+ "code" : "KM",
+ "chinese" : "科摩罗",
+ "phoneCode" : "+269"
+ },
+ {
+ "pinYin" : "ke te di wa",
+ "english" : "Côte d’Ivoire",
+ "code" : "CI",
+ "chinese" : "科特迪瓦",
+ "phoneCode" : "+225"
+ },
+ {
+ "pinYin" : "ke wei te",
+ "english" : "Kuwait",
+ "code" : "KW",
+ "chinese" : "科威特",
+ "phoneCode" : "+965"
+ },
+ {
+ "pinYin" : "ken ni ya",
+ "english" : "Kenya",
+ "code" : "KE",
+ "chinese" : "肯尼亚",
+ "phoneCode" : "+254"
+ },
+ {
+ "pinYin" : "ku ke qun dao",
+ "english" : "Cook Islands",
+ "code" : "CK",
+ "chinese" : "库克群岛",
+ "phoneCode" : "+682"
+ },
+ {
+ "pinYin" : "ku la suo",
+ "english" : "Curaçao",
+ "code" : "AN",
+ "chinese" : "库拉索",
+ "phoneCode" : "+599"
+ },
+ {
+ "pinYin" : "la tuo wei ya",
+ "english" : "Latvia",
+ "code" : "LV",
+ "chinese" : "拉脱维亚",
+ "phoneCode" : "+371"
+ },
+ {
+ "pinYin" : "lai suo tuo",
+ "english" : "Lesotho",
+ "code" : "LS",
+ "chinese" : "莱索托",
+ "phoneCode" : "+266"
+ },
+ {
+ "pinYin" : "lao wo",
+ "english" : "Laos",
+ "code" : "LA",
+ "chinese" : "老挝",
+ "phoneCode" : "+856"
+ },
+ {
+ "pinYin" : "li ba nen",
+ "english" : "Lebanon",
+ "code" : "LB",
+ "chinese" : "黎巴嫩",
+ "phoneCode" : "+961"
+ },
+ {
+ "pinYin" : "li bi li ya",
+ "english" : "Liberia",
+ "code" : "LR",
+ "chinese" : "利比里亚",
+ "phoneCode" : "+231"
+ },
+ {
+ "pinYin" : "li bi ya",
+ "english" : "Libya",
+ "code" : "LY",
+ "chinese" : "利比亚",
+ "phoneCode" : "+218"
+ },
+ {
+ "pinYin" : "li tao wan",
+ "english" : "Lithuania",
+ "code" : "LT",
+ "chinese" : "立陶宛",
+ "phoneCode" : "+370"
+ },
+ {
+ "pinYin" : "lie zhi dun shi deng",
+ "english" : "Liechtenstein",
+ "code" : "LI",
+ "chinese" : "列支敦士登",
+ "phoneCode" : "+423"
+ },
+ {
+ "pinYin" : "lu sen bao",
+ "english" : "Luxembourg",
+ "code" : "LU",
+ "chinese" : "卢森堡",
+ "phoneCode" : "+352"
+ },
+ {
+ "pinYin" : "lu wang da",
+ "english" : "Rwanda",
+ "code" : "RW",
+ "chinese" : "卢旺达",
+ "phoneCode" : "+250"
+ },
+ {
+ "pinYin" : "luo ma ni ya",
+ "english" : "Romania",
+ "code" : "RO",
+ "chinese" : "罗马尼亚",
+ "phoneCode" : "+40"
+ },
+ {
+ "pinYin" : "ma da jia si jia",
+ "english" : "Madagascar",
+ "code" : "MG",
+ "chinese" : "马达加斯加",
+ "phoneCode" : "+261"
+ },
+ {
+ "pinYin" : "ma er dai fu",
+ "english" : "Maldives",
+ "code" : "MV",
+ "chinese" : "马尔代夫",
+ "phoneCode" : "+960"
+ },
+ {
+ "pinYin" : "ma er ta",
+ "english" : "Malta",
+ "code" : "MT",
+ "chinese" : "马耳他",
+ "phoneCode" : "+356"
+ },
+ {
+ "pinYin" : "ma la wei",
+ "english" : "Malawi",
+ "code" : "MW",
+ "chinese" : "马拉维",
+ "phoneCode" : "+265"
+ },
+ {
+ "pinYin" : "ma lai xi ya",
+ "english" : "Malaysia",
+ "code" : "MY",
+ "chinese" : "马来西亚",
+ "phoneCode" : "+60"
+ },
+ {
+ "pinYin" : "ma li",
+ "english" : "Mali",
+ "code" : "ML",
+ "chinese" : "马里",
+ "phoneCode" : "+223"
+ },
+ {
+ "pinYin" : "ma qi dun",
+ "english" : "Macedonia",
+ "code" : "MK",
+ "chinese" : "马其顿",
+ "phoneCode" : "+389"
+ },
+ {
+ "pinYin" : "ma shao er qun dao",
+ "english" : "Marshall Islands",
+ "code" : "MH",
+ "chinese" : "马绍尔群岛",
+ "phoneCode" : "+692"
+ },
+ {
+ "pinYin" : "ma ti ni ke",
+ "english" : "Martinique",
+ "code" : "MQ",
+ "chinese" : "马提尼克",
+ "phoneCode" : "+596"
+ },
+ {
+ "pinYin" : "ma yue te",
+ "english" : "Mayotte",
+ "code" : "YT",
+ "chinese" : "马约特",
+ "phoneCode" : "+262"
+ },
+ {
+ "pinYin" : "mao li qiu si",
+ "english" : "Mauritius",
+ "code" : "MU",
+ "chinese" : "毛里求斯",
+ "phoneCode" : "+230"
+ },
+ {
+ "pinYin" : "mao li ta ni ya",
+ "english" : "Mauritania",
+ "code" : "MR",
+ "chinese" : "毛里塔尼亚",
+ "phoneCode" : "+222"
+ },
+ {
+ "pinYin" : "mei guo",
+ "english" : "United States",
+ "code" : "US",
+ "chinese" : "美国",
+ "phoneCode" : "+1"
+ },
+ {
+ "pinYin" : "mei shu sa mo ya",
+ "english" : "American Samoa",
+ "code" : "AS",
+ "chinese" : "美属萨摩亚",
+ "phoneCode" : "+1 684"
+ },
+ {
+ "pinYin" : "mei shu wei er jing qun dao",
+ "english" : "U.S. Virgin Islands",
+ "code" : "VI",
+ "chinese" : "美属维尔京群岛",
+ "phoneCode" : "+1 340"
+ },
+ {
+ "pinYin" : "meng gu",
+ "english" : "Mongolia",
+ "code" : "MN",
+ "chinese" : "蒙古",
+ "phoneCode" : "+976"
+ },
+ {
+ "pinYin" : "meng jia la guo",
+ "english" : "Bangladesh",
+ "code" : "BD",
+ "chinese" : "孟加拉国",
+ "phoneCode" : "+880"
+ },
+ {
+ "pinYin" : "meng te sai la te",
+ "english" : "Montserrat",
+ "code" : "MS",
+ "chinese" : "蒙特塞拉特",
+ "phoneCode" : "+1664"
+ },
+ {
+ "pinYin" : "mi ke luo ni xi ya",
+ "english" : "Micronesia",
+ "code" : "FM",
+ "chinese" : "密克罗尼西亚",
+ "phoneCode" : "+691"
+ },
+ {
+ "pinYin" : "mian dian",
+ "english" : "Myanmar (Burma)",
+ "code" : "MM",
+ "chinese" : "缅甸",
+ "phoneCode" : "+95"
+ },
+ {
+ "pinYin" : "mo er duo wa",
+ "english" : "Moldova",
+ "code" : "MD",
+ "chinese" : "摩尔多瓦",
+ "phoneCode" : "+373"
+ },
+ {
+ "pinYin" : "mo luo ge",
+ "english" : "Morocco",
+ "code" : "MA",
+ "chinese" : "摩洛哥",
+ "phoneCode" : "+212"
+ },
+ {
+ "pinYin" : "mo na ge",
+ "english" : "Monaco",
+ "code" : "MC",
+ "chinese" : "摩纳哥",
+ "phoneCode" : "+377"
+ },
+ {
+ "pinYin" : "mo sang bi ke",
+ "english" : "Mozambique",
+ "code" : "MZ",
+ "chinese" : "莫桑比克",
+ "phoneCode" : "+258"
+ },
+ {
+ "pinYin" : "mo xi ge",
+ "english" : "Mexico",
+ "code" : "MX",
+ "chinese" : "墨西哥",
+ "phoneCode" : "+52"
+ },
+ {
+ "pinYin" : "na mi bi ya",
+ "english" : "Namibia",
+ "code" : "NA",
+ "chinese" : "纳米比亚",
+ "phoneCode" : "+264"
+ },
+ {
+ "pinYin" : "nan fei",
+ "english" : "South Africa",
+ "code" : "ZA",
+ "chinese" : "南非",
+ "phoneCode" : "+27"
+ },
+ {
+ "pinYin" : "nan qiao zhi ya he nan sang wei qi qun dao",
+ "english" : "So. Georgia & So. Sandwich Isl.",
+ "code" : "GS",
+ "chinese" : "南乔治亚和南桑威奇群岛",
+ "phoneCode" : "+500"
+ },
+ {
+ "pinYin" : "nao lu",
+ "english" : "Nauru",
+ "code" : "NR",
+ "chinese" : "瑙鲁",
+ "phoneCode" : "+674"
+ },
+ {
+ "pinYin" : "ni jia la gua",
+ "english" : "Nicaragua",
+ "code" : "NI",
+ "chinese" : "尼加拉瓜",
+ "phoneCode" : "+505"
+ },
+ {
+ "pinYin" : "ni po er",
+ "english" : "Nepal",
+ "code" : "NP",
+ "chinese" : "尼泊尔",
+ "phoneCode" : "+977"
+ },
+ {
+ "pinYin" : "ni ri er",
+ "english" : "Niger",
+ "code" : "NE",
+ "chinese" : "尼日尔",
+ "phoneCode" : "+227"
+ },
+ {
+ "pinYin" : "ni ri li ya",
+ "english" : "Nigeria",
+ "code" : "NG",
+ "chinese" : "尼日利亚",
+ "phoneCode" : "+234"
+ },
+ {
+ "pinYin" : "niu ai",
+ "english" : "Niue",
+ "code" : "NU",
+ "chinese" : "纽埃",
+ "phoneCode" : "+683"
+ },
+ {
+ "pinYin" : "nuo fu ke dao",
+ "english" : "Norfolk Island",
+ "code" : "NF",
+ "chinese" : "诺福克岛",
+ "phoneCode" : "+672"
+ },
+ {
+ "pinYin" : "nuo wei",
+ "english" : "Norway",
+ "code" : "NO",
+ "chinese" : "挪威",
+ "phoneCode" : "+47"
+ },
+ {
+ "pinYin" : "pa lao",
+ "english" : "Palau",
+ "code" : "PW",
+ "chinese" : "帕劳",
+ "phoneCode" : "+680"
+ },
+ {
+ "pinYin" : "pi te kai en qun dao",
+ "english" : "Pitcairn Islands",
+ "code" : "PN",
+ "chinese" : "皮特凯恩群岛",
+ "phoneCode" : "+872"
+ },
+ {
+ "pinYin" : "pu tao ya",
+ "english" : "Portugal",
+ "code" : "PT",
+ "chinese" : "葡萄牙",
+ "phoneCode" : "+351"
+ },
+ {
+ "pinYin" : "ri ben",
+ "english" : "Japan",
+ "code" : "JP",
+ "chinese" : "日本",
+ "phoneCode" : "+81"
+ },
+ {
+ "pinYin" : "rui dian",
+ "english" : "Sweden",
+ "code" : "SE",
+ "chinese" : "瑞典",
+ "phoneCode" : "+46"
+ },
+ {
+ "pinYin" : "rui shi",
+ "english" : "Switzerland",
+ "code" : "CH",
+ "chinese" : "瑞士",
+ "phoneCode" : "+41"
+ },
+ {
+ "pinYin" : "sa er wa duo",
+ "english" : "El Salvador",
+ "code" : "SV",
+ "chinese" : "萨尔瓦多",
+ "phoneCode" : "+503"
+ },
+ {
+ "pinYin" : "sa mo ya",
+ "english" : "Samoa",
+ "code" : "WS",
+ "chinese" : "萨摩亚",
+ "phoneCode" : "+685"
+ },
+ {
+ "pinYin" : "sai er wei ya",
+ "english" : "Serbia",
+ "code" : "RS",
+ "chinese" : "塞尔维亚",
+ "phoneCode" : "+381"
+ },
+ {
+ "pinYin" : "sai la li ang",
+ "english" : "Sierra Leone",
+ "code" : "SL",
+ "chinese" : "塞拉利昂",
+ "phoneCode" : "+232"
+ },
+ {
+ "pinYin" : "sai nei jia er",
+ "english" : "Senegal",
+ "code" : "SN",
+ "chinese" : "塞内加尔",
+ "phoneCode" : "+221"
+ },
+ {
+ "pinYin" : "sai pu lu si",
+ "english" : "Cyprus",
+ "code" : "CY",
+ "chinese" : "塞浦路斯",
+ "phoneCode" : "+537"
+ },
+ {
+ "pinYin" : "sai she er",
+ "english" : "Seychelles",
+ "code" : "SC",
+ "chinese" : "塞舌尔",
+ "phoneCode" : "+248"
+ },
+ {
+ "pinYin" : "sha te a la bo",
+ "english" : "Saudi Arabia",
+ "code" : "SA",
+ "chinese" : "沙特阿拉伯",
+ "phoneCode" : "+966"
+ },
+ {
+ "pinYin" : "sheng duo mei he pu lin xi bi",
+ "english" : "São Tomé & Príncipe",
+ "code" : "ST",
+ "chinese" : "圣多美和普林西比",
+ "phoneCode" : "+239"
+ },
+ {
+ "pinYin" : "sheng he lei na",
+ "english" : "St. Helena",
+ "code" : "SH",
+ "chinese" : "圣赫勒拿",
+ "phoneCode" : "+290"
+ },
+ {
+ "pinYin" : "sheng ji ci he ni wei si",
+ "english" : "St. Kitts & Nevis",
+ "code" : "KN",
+ "chinese" : "圣基茨和尼维斯",
+ "phoneCode" : "+1 869"
+ },
+ {
+ "pinYin" : "sheng lu xi ya",
+ "english" : "St. Lucia",
+ "code" : "LC",
+ "chinese" : "圣卢西亚",
+ "phoneCode" : "+1 758"
+ },
+ {
+ "pinYin" : "sheng ma li nuo",
+ "english" : "San Marino",
+ "code" : "SM",
+ "chinese" : "圣马力诺",
+ "phoneCode" : "+378"
+ },
+ {
+ "pinYin" : "sheng pi ai er he mi ke long qun dao",
+ "english" : "St. Pierre & Miquelon",
+ "code" : "PM",
+ "chinese" : "圣皮埃尔和密克隆群岛",
+ "phoneCode" : "+508"
+ },
+ {
+ "pinYin" : "sheng wen sen te he ge lin na ding si",
+ "english" : "St. Vincent & Grenadines",
+ "code" : "VC",
+ "chinese" : "圣文森特和格林纳丁斯",
+ "phoneCode" : "+1 784"
+ },
+ {
+ "pinYin" : "si li lan ka",
+ "english" : "Sri Lanka",
+ "code" : "LK",
+ "chinese" : "斯里兰卡",
+ "phoneCode" : "+94"
+ },
+ {
+ "pinYin" : "si luo fa ke",
+ "english" : "Slovakia",
+ "code" : "SK",
+ "chinese" : "斯洛伐克",
+ "phoneCode" : "+421"
+ },
+ {
+ "pinYin" : "si luo wen ni ya",
+ "english" : "Slovenia",
+ "code" : "SI",
+ "chinese" : "斯洛文尼亚",
+ "phoneCode" : "+386"
+ },
+ {
+ "pinYin" : "si wei shi lan",
+ "english" : "Swaziland",
+ "code" : "SZ",
+ "chinese" : "斯威士兰",
+ "phoneCode" : "+268"
+ },
+ {
+ "pinYin" : "su dan",
+ "english" : "Sudan",
+ "code" : "SD",
+ "chinese" : "苏丹",
+ "phoneCode" : "+249"
+ },
+ {
+ "pinYin" : "su li nan",
+ "english" : "Suriname",
+ "code" : "SR",
+ "chinese" : "苏里南",
+ "phoneCode" : "+597"
+ },
+ {
+ "pinYin" : "suo luo men qun dao",
+ "english" : "Solomon Islands",
+ "code" : "SB",
+ "chinese" : "所罗门群岛",
+ "phoneCode" : "+677"
+ },
+ {
+ "pinYin" : "suo ma li",
+ "english" : "Somalia",
+ "code" : "SO",
+ "chinese" : "索马里",
+ "phoneCode" : "+252"
+ },
+ {
+ "pinYin" : "ta ji ke si tan",
+ "english" : "Tajikistan",
+ "code" : "TJ",
+ "chinese" : "塔吉克斯坦",
+ "phoneCode" : "+992"
+ },
+ {
+ "pinYin" : "tai guo",
+ "english" : "Thailand",
+ "code" : "TH",
+ "chinese" : "泰国",
+ "phoneCode" : "+66"
+ },
+ {
+ "pinYin" : "tai wan",
+ "english" : "Taiwan",
+ "code" : "TW",
+ "chinese" : "台湾",
+ "phoneCode" : "+886"
+ },
+ {
+ "pinYin" : "tan sang ni ya",
+ "english" : "Tanzania",
+ "code" : "TZ",
+ "chinese" : "坦桑尼亚",
+ "phoneCode" : "+255"
+ },
+ {
+ "pinYin" : "tang jia",
+ "english" : "Tonga",
+ "code" : "TO",
+ "chinese" : "汤加",
+ "phoneCode" : "+676"
+ },
+ {
+ "pinYin" : "te ke si he kai ke si qun dao",
+ "english" : "Turks & Caicos Islands",
+ "code" : "TC",
+ "chinese" : "特克斯和凯科斯群岛",
+ "phoneCode" : "+1 649"
+ },
+ {
+ "pinYin" : "te li ni da he duo ba ge",
+ "english" : "Trinidad & Tobago",
+ "code" : "TT",
+ "chinese" : "特立尼达和多巴哥",
+ "phoneCode" : "+1 868"
+ },
+ {
+ "pinYin" : "tu er qi",
+ "english" : "Turkey",
+ "code" : "TR",
+ "chinese" : "土耳其",
+ "phoneCode" : "+90"
+ },
+ {
+ "pinYin" : "tu ku man si tan",
+ "english" : "Turkmenistan",
+ "code" : "TM",
+ "chinese" : "土库曼斯坦",
+ "phoneCode" : "+993"
+ },
+ {
+ "pinYin" : "tu ni si",
+ "english" : "Tunisia",
+ "code" : "TN",
+ "chinese" : "突尼斯",
+ "phoneCode" : "+216"
+ },
+ {
+ "pinYin" : "tu wa lu",
+ "english" : "Tuvalu",
+ "code" : "TV",
+ "chinese" : "图瓦卢",
+ "phoneCode" : "+688"
+ },
+ {
+ "pinYin" : "tuo ke lao",
+ "english" : "Tokelau",
+ "code" : "TK",
+ "chinese" : "托克劳",
+ "phoneCode" : "+690"
+ },
+ {
+ "pinYin" : "wa li si he fu tu na",
+ "english" : "Wallis & Futuna",
+ "code" : "WF",
+ "chinese" : "瓦利斯和富图纳",
+ "phoneCode" : "+681"
+ },
+ {
+ "pinYin" : "wa nu a tu",
+ "english" : "Vanuatu",
+ "code" : "VU",
+ "chinese" : "瓦努阿图",
+ "phoneCode" : "+678"
+ },
+ {
+ "pinYin" : "wei de ma la",
+ "english" : "Guatemala",
+ "code" : "GT",
+ "chinese" : "危地马拉",
+ "phoneCode" : "+502"
+ },
+ {
+ "pinYin" : "wei nei rui la",
+ "english" : "Venezuela",
+ "code" : "VE",
+ "chinese" : "委内瑞拉",
+ "phoneCode" : "+58"
+ },
+ {
+ "pinYin" : "wen lai",
+ "english" : "Brunei",
+ "code" : "BN",
+ "chinese" : "文莱",
+ "phoneCode" : "+673"
+ },
+ {
+ "pinYin" : "wu gan da",
+ "english" : "Uganda",
+ "code" : "UG",
+ "chinese" : "乌干达",
+ "phoneCode" : "+256"
+ },
+ {
+ "pinYin" : "wu ke lan",
+ "english" : "Ukraine",
+ "code" : "UA",
+ "chinese" : "乌克兰",
+ "phoneCode" : "+380"
+ },
+ {
+ "pinYin" : "wu la gui",
+ "english" : "Uruguay",
+ "code" : "UY",
+ "chinese" : "乌拉圭",
+ "phoneCode" : "+598"
+ },
+ {
+ "pinYin" : "wu zi bie ke si tan",
+ "english" : "Uzbekistan",
+ "code" : "UZ",
+ "chinese" : "乌兹别克斯坦",
+ "phoneCode" : "+998"
+ },
+ {
+ "pinYin" : "xi ban ya",
+ "english" : "Spain",
+ "code" : "ES",
+ "chinese" : "西班牙",
+ "phoneCode" : "+34"
+ },
+ {
+ "pinYin" : "xi la",
+ "english" : "Greece",
+ "code" : "GR",
+ "chinese" : "希腊",
+ "phoneCode" : "+30"
+ },
+ {
+ "pinYin" : "xiang gang （zhong guo）",
+ "english" : "Hong Kong (China)",
+ "code" : "HK",
+ "chinese" : "香港（中国）",
+ "phoneCode" : "+852"
+ },
+ {
+ "pinYin" : "xin jia po",
+ "english" : "Singapore",
+ "code" : "SG",
+ "chinese" : "新加坡",
+ "phoneCode" : "+65"
+ },
+ {
+ "pinYin" : "xin ka li duo ni ya",
+ "english" : "New Caledonia",
+ "code" : "NC",
+ "chinese" : "新喀里多尼亚",
+ "phoneCode" : "+687"
+ },
+ {
+ "pinYin" : "xin xi lan",
+ "english" : "New Zealand",
+ "code" : "NZ",
+ "chinese" : "新西兰",
+ "phoneCode" : "+64"
+ },
+ {
+ "pinYin" : "xiong ya li",
+ "english" : "Hungary",
+ "code" : "HU",
+ "chinese" : "匈牙利",
+ "phoneCode" : "+36"
+ },
+ {
+ "pinYin" : "xu li ya",
+ "english" : "Syria",
+ "code" : "SY",
+ "chinese" : "叙利亚",
+ "phoneCode" : "+963"
+ },
+ {
+ "pinYin" : "ya mai jia",
+ "english" : "Jamaica",
+ "code" : "JM",
+ "chinese" : "牙买加",
+ "phoneCode" : "+1 876"
+ },
+ {
+ "pinYin" : "ya mei ni ya",
+ "english" : "Armenia",
+ "code" : "AM",
+ "chinese" : "亚美尼亚",
+ "phoneCode" : "+374"
+ },
+ {
+ "pinYin" : "ye men",
+ "english" : "Yemen",
+ "code" : "YE",
+ "chinese" : "也门",
+ "phoneCode" : "+967"
+ },
+ {
+ "pinYin" : "yi da li",
+ "english" : "Italy",
+ "code" : "IT",
+ "chinese" : "意大利",
+ "phoneCode" : "+39"
+ },
+ {
+ "pinYin" : "yi la ke",
+ "english" : "Iraq",
+ "code" : "IQ",
+ "chinese" : "伊拉克",
+ "phoneCode" : "+964"
+ },
+ {
+ "pinYin" : "yi lang",
+ "english" : "Iran",
+ "code" : "IR",
+ "chinese" : "伊朗",
+ "phoneCode" : "+98"
+ },
+ {
+ "pinYin" : "yi se lie",
+ "english" : "Israel",
+ "code" : "IL",
+ "chinese" : "以色列",
+ "phoneCode" : "+972"
+ },
+ {
+ "pinYin" : "yin du",
+ "english" : "India",
+ "code" : "IN",
+ "chinese" : "印度",
+ "phoneCode" : "+91"
+ },
+ {
+ "pinYin" : "yin du ni xi ya",
+ "english" : "Indonesia",
+ "code" : "ID",
+ "chinese" : "印度尼西亚",
+ "phoneCode" : "+62"
+ },
+ {
+ "pinYin" : "ying guo",
+ "english" : "United Kingdom",
+ "code" : "GB",
+ "chinese" : "英国",
+ "phoneCode" : "+44"
+ },
+ {
+ "pinYin" : "ying shu wei er jing qun dao",
+ "english" : "British Virgin Islands",
+ "code" : "VG",
+ "chinese" : "英属维尔京群岛",
+ "phoneCode" : "+1 284"
+ },
+ {
+ "pinYin" : "ying shu yin du yang ling de",
+ "english" : "British Indian Ocean Territory",
+ "code" : "IO",
+ "chinese" : "英属印度洋领地",
+ "phoneCode" : "+246"
+ },
+ {
+ "pinYin" : "yue dan",
+ "english" : "Jordan",
+ "code" : "JO",
+ "chinese" : "约旦",
+ "phoneCode" : "+962"
+ },
+ {
+ "pinYin" : "yue nan",
+ "english" : "Vietnam",
+ "code" : "VN",
+ "chinese" : "越南",
+ "phoneCode" : "+84"
+ },
+ {
+ "pinYin" : "zan bi ya",
+ "english" : "Zambia",
+ "code" : "ZM",
+ "chinese" : "赞比亚",
+ "phoneCode" : "+260"
+ },
+ {
+ "pinYin" : "zha de",
+ "english" : "Chad",
+ "code" : "TD",
+ "chinese" : "乍得",
+ "phoneCode" : "+235"
+ },
+ {
+ "pinYin" : "zhi bu luo tuo",
+ "english" : "Gibraltar",
+ "code" : "GI",
+ "chinese" : "直布罗陀",
+ "phoneCode" : "+350"
+ },
+ {
+ "pinYin" : "zhi li",
+ "english" : "Chile",
+ "code" : "CL",
+ "chinese" : "智利",
+ "phoneCode" : "+56"
+ },
+ {
+ "pinYin" : "zhong fei gong he guo",
+ "english" : "Central African Republic",
+ "code" : "CF",
+ "chinese" : "中非共和国",
+ "phoneCode" : "+236"
+ },
+ {
+ "pinYin" : "zhong guo",
+ "english" : "China",
+ "code" : "CN",
+ "chinese" : "中国",
+ "phoneCode" : "+86"
+ }
+ ]
+

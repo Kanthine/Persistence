@@ -64,13 +64,17 @@
     }];
 }
 
-/** 根据所有数据
- */
+
+
 + (void)getAllDatas:(void(^)(NSArray<PhoneCodeModel *> *models))block{
     
     [DatabaseManagement databaseChildThreadInTransaction:^(FMDatabase *database, BOOL *rollback) {
         NSMutableArray *array = [NSMutableArray array];
         
+        // SELECT * FROM PhoneCodeModel WHERE name REGEXP '^a';
+        
+        //NSString *string = [NSString stringWithFormat:@"SELECT * FROM PhoneCodeModel WHERE countryPinYin LIKE '%@%%'",@"1"];
+        //NSLog(@"string === %@",string);
         FMResultSet *resultSet = [database executeQuery:@"SELECT * FROM PhoneCodeModel"];
         while ([resultSet next]){
             PhoneCodeModel *model = [[PhoneCodeModel alloc] init];
@@ -80,12 +84,15 @@
             model.phoneCode = [resultSet stringForColumn:@"phoneCode"];
             model.countryChinese = [resultSet stringForColumn:@"countryChinese"];
             [array addObject:model];
+//            NSLog(@"countryPinYin ==== %@",resultSet.resultDictionary);
         }
         [resultSet close];
         
-       dispatch_async(dispatch_get_main_queue(), ^{
-            block(array);
+        dispatch_async(dispatch_get_main_queue(), ^{
+               block(array);
         });
+        
+        NSLog(@" --------- 查询结束 --------- ");
     }];
 }
 
