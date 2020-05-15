@@ -62,20 +62,12 @@ return ret;
     RETURN_RESULT_FOR_QUERY_WITH_SELECTOR(NSDate *, dateForColumnIndex);
 }
 
-/** 判断表是否存在
- */
+/** 判断表是否存在 */
 - (BOOL)tableExists:(NSString*)tableName {
-    
     tableName = [tableName lowercaseString];
-    
     FMResultSet *rs = [self executeQuery:@"select [sql] from sqlite_master where [type] = 'table' and lower(name) = ?", tableName];
-    
-    //if at least one next exists, table exists
     BOOL returnBool = [rs next];
-    
-    //close and free object
     [rs close];
-    
     return returnBool;
 }
 
@@ -84,33 +76,38 @@ return ret;
  * 但 sqlite_master 中不仅可以是表对象，还可以是其它对象，
  * 比如索引： name 是索引的名字，而 tbl_name 是索引所属的表名
 */
-- (FMResultSet * _Nullable)getSchema {
-
-    //result colums: type[STRING], name[STRING],tbl_name[STRING],rootpage[INTEGER],sql[STRING]
+- (FMResultSet * _Nullable)getSchema{
     FMResultSet *rs = [self executeQuery:@"SELECT type, name, tbl_name, rootpage, sql FROM (SELECT * FROM sqlite_master UNION ALL SELECT * FROM sqlite_temp_master) WHERE type != 'meta' AND name NOT LIKE 'sqlite_%' ORDER BY tbl_name, type DESC, name"];
     return rs;
 }
 
 /** get table schema: result colums: cid[INTEGER], name,type [STRING], notnull[INTEGER], dflt_value[],pk[INTEGER]
+ 
+ 
+table_info(
+    cid  integer,//列码
+    name text,//该列表头
+    type text,//该列的数据类性
+    pk    boolean,//是否是主键
+    notnull boolean,//要求非空
+    dflt_value,//该列默认值
+)
  */
 - (FMResultSet * _Nullable)getTableSchema:(NSString*)tableName {
-    
     //result colums: cid[INTEGER], name,type [STRING], notnull[INTEGER], dflt_value[],pk[INTEGER]
     FMResultSet *rs = [self executeQuery:[NSString stringWithFormat: @"pragma table_info('%@')", tableName]];
-    
     return rs;
 }
 
 /** 判断column是否存在
  */
 - (BOOL)columnExists:(NSString*)columnName inTableWithName:(NSString*)tableName {
-    
     BOOL returnBool = NO;
     
     tableName  = [tableName lowercaseString];
     columnName = [columnName lowercaseString];
     
-    FMResultSet *rs = [self getTableSchema:tableName];
+    FMResultSet *rs = [self getTableSchema:tableName];//获取 table_info
     
     //check if column is present in table schema
     while ([rs next]) {
@@ -122,7 +119,6 @@ return ret;
     
     //If this is not done FMDatabase instance stays out of pool
     [rs close];
-    
     return returnBool;
 }
 
@@ -231,8 +227,7 @@ return ret;
         if (error) {
             *error = [NSError errorWithDomain:NSCocoaErrorDomain
                                          code:[self lastErrorCode]
-                                     userInfo:[NSDictionary dictionaryWithObject:[self lastErrorMessage]
-                                                                          forKey:NSLocalizedDescriptionKey]];
+                                     userInfo:[NSDictionary dictionaryWithObject:[self lastErrorMessage] forKey:NSLocalizedDescriptionKey]];
         }
     }
     sqlite3_finalize(pStmt);

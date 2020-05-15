@@ -62,11 +62,11 @@ NS_ASSUME_NONNULL_END
     if (self) {
         _databasePath               = [path copy];
         _openResultSets             = [[NSMutableSet alloc] init];
-        _db                         = nil;
+        _db                         = nil;//数据库为空
         _logsErrors                 = YES;
         _crashOnErrors              = NO;
         _maxBusyRetryTimeInterval   = 2;
-        _isOpen                     = NO;
+        _isOpen                     = NO;//默认数据库关闭
     }
     return self;
 }
@@ -151,9 +151,9 @@ NS_ASSUME_NONNULL_END
 
 #pragma mark 打开、关闭 数据库
 
-/** 打开一个指向 SQLite 数据库文件的连接，返回一个用于其他 SQLite 程序的数据库连接对象
-param filename UTF-8编码的数据库名称
-param ppDb 数据库
+/** 根据指定路径打开一个 SQLite 数据库，返回一个用于其他 SQLite 程序的数据库连接对象
+ * @param filename UTF-8编码的数据库名称
+ * @param ppDb SQLite数据库连接对象
 int sqlite3_open(const char *filename,sqlite3 **ppDb);
  */
 
@@ -168,7 +168,7 @@ int sqlite3_open(const char *filename,sqlite3 **ppDb);
         [self close];
     }
     
-    // now open database
+    //调用sqlite3_open()函数创建数据库
     int err = sqlite3_open([self sqlitePath], (sqlite3**)&_db);
     if(err != SQLITE_OK) {
         NSLog(@"error opening!: %d", err);
@@ -182,6 +182,8 @@ int sqlite3_open(const char *filename,sqlite3 **ppDb);
     _isOpen = YES;
     return YES;
 }
+
+
 
 - (BOOL)openWithFlags:(int)flags {
     return [self openWithFlags:flags vfs:nil];
@@ -203,14 +205,10 @@ int sqlite3_open(const char *filename,sqlite3 **ppDb);
         NSLog(@"error opening!: %d", err);
         return NO;
     }
-    
     if (_maxBusyRetryTimeInterval > 0.0) {
-        // set the handler
         [self setMaxBusyRetryTimeInterval:_maxBusyRetryTimeInterval];
     }
-    
     _isOpen = YES;
-    
     return YES;
 #else
     NSLog(@"openWithFlags requires SQLite 3.5");
@@ -218,19 +216,17 @@ int sqlite3_open(const char *filename,sqlite3 **ppDb);
 #endif
 }
 
+/** 关闭数据库连接 */
 - (BOOL)close {
-    
-    [self clearCachedStatements];
-    [self closeOpenResultSets];
-    
-    if (!_db) {
+    [self clearCachedStatements];//清理缓存
+    [self closeOpenResultSets];//清理结果集
+    if (!_db) {//如果数据库不存在
         return YES;
     }
     
     int  rc;
     BOOL retry;
     BOOL triedFinalizingOpenStatements = NO;
-    
     do {
         retry   = NO;
         rc      = sqlite3_close(_db);
@@ -249,10 +245,8 @@ int sqlite3_open(const char *filename,sqlite3 **ppDb);
         }
     }
     while (retry);
-    
-    _db = nil;
-    _isOpen = false;
-    
+    _db = nil;//数据库指针指向 nil
+    _isOpen = false;//状态改为 NO
     return YES;
 }
 
@@ -367,10 +361,8 @@ static int FMDBDatabaseBusyHandler(void *f, int count) {
     NSSet *openSetCopy = FMDBReturnAutoreleased([_openResultSets copy]);
     for (NSValue *rsInWrappedInATastyValueMeal in openSetCopy) {
         FMResultSet *rs = (FMResultSet *)[rsInWrappedInATastyValueMeal pointerValue];
-        
         [rs setParentDB:nil];
         [rs close];
-        
         [_openResultSets removeObject:rsInWrappedInATastyValueMeal];
     }
 }
@@ -384,13 +376,11 @@ static int FMDBDatabaseBusyHandler(void *f, int count) {
 #pragma mark Cached statements
 
 - (void)clearCachedStatements {
-    
     for (NSMutableSet *statements in [_cachedStatements objectEnumerator]) {
         for (FMStatement *statement in [statements allObjects]) {
             [statement close];
         }
     }
-    
     [_cachedStatements removeAllObjects];
 }
 
@@ -511,34 +501,26 @@ static int FMDBDatabaseBusyHandler(void *f, int count) {
 
 - (BOOL)goodConnection {
     
+    //1、数据库是否打开
     if (!_isOpen) {
         return NO;
     }
     
+    //2、尝试一个简单的 SELECT 语句并确认成功
 #ifdef SQLCIPHER_CRYPTO
-    // Starting with Xcode8 / iOS 10 we check to make sure we really are linked with
-    // SQLCipher because there is no longer a linker error if we accidently link
-    // with unencrypted sqlite library.
-    //
-    // https://discuss.zetetic.net/t/important-advisory-sqlcipher-with-xcode-8-and-new-sdks/1688
-    
     FMResultSet *rs = [self executeQuery:@"PRAGMA cipher_version"];
-
     if ([rs next]) {
         NSLog(@"SQLCipher version: %@", rs.resultDictionary[@"cipher_version"]);
-        
         [rs close];
         return YES;
     }
 #else
     FMResultSet *rs = [self executeQuery:@"select name from sqlite_master where type='table'"];
-    
     if (rs) {
         [rs close];
         return YES;
     }
 #endif
-    
     return NO;
 }
 
@@ -1033,12 +1015,10 @@ static int FMDBDatabaseBusyHandler(void *f, int count) {
 #pragma mark Execute updates
 
 - (BOOL)executeUpdate:(NSString*)sql error:(NSError * _Nullable __autoreleasing *)outErr withArgumentsInArray:(NSArray*)arrayArgs orDictionary:(NSDictionary *)dictionaryArgs orVAList:(va_list)args {
-    
-    if (![self databaseExists]) {
+    if (![self databaseExists]) {//数据库是否存在
         return NO;
     }
-    
-    if (_isExecutingStatement) {
+    if (_isExecutingStatement) {//正在执行 Sql
         [self warnInUse];
         return NO;
     }
@@ -1258,9 +1238,7 @@ static int FMDBDatabaseBusyHandler(void *f, int count) {
 - (BOOL)executeUpdate:(NSString*)sql, ... {
     va_list args;
     va_start(args, sql);
-    
     BOOL result = [self executeUpdate:sql error:nil withArgumentsInArray:nil orDictionary:nil orVAList:args];
-    
     va_end(args);
     return result;
 }

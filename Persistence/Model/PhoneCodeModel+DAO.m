@@ -70,11 +70,7 @@
     
     [DatabaseManagement databaseChildThreadInTransaction:^(FMDatabase *database, BOOL *rollback) {
         NSMutableArray *array = [NSMutableArray array];
-        
-        // SELECT * FROM PhoneCodeModel WHERE name REGEXP '^a';
-        
-        //NSString *string = [NSString stringWithFormat:@"SELECT * FROM PhoneCodeModel WHERE countryPinYin LIKE '%@%%'",@"1"];
-        //NSLog(@"string === %@",string);
+
         FMResultSet *resultSet = [database executeQuery:@"SELECT * FROM PhoneCodeModel"];
         while ([resultSet next]){
             PhoneCodeModel *model = [[PhoneCodeModel alloc] init];
@@ -85,6 +81,9 @@
             model.countryChinese = [resultSet stringForColumn:@"countryChinese"];
             [array addObject:model];
 //            NSLog(@"countryPinYin ==== %@",resultSet.resultDictionary);
+            
+            NSLog(@"statement ： %@",resultSet.statement);
+            NSLog(@"columnCount ： %d",resultSet.columnCount);
         }
         [resultSet close];
         

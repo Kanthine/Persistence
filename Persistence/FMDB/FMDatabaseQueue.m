@@ -22,10 +22,7 @@ typedef NS_ENUM(NSInteger, FMDBTransaction) {
     FMDBTransactionImmediate,//立即开启事务
 };
 
-/**
- * 注:调用[self retain];在使用dispatch_sync()之前，假设FMDatabaseQueue是在另一个线程上发布的，而我们正在dispatch_sync() 中执行一些操作
- * 用于将 FMDatabaseQueue 对象与它使用的dispatch_queue_t关联的键。
- * 这反过来用于死锁检测，通过查看inDatabase: 是否在队列的调度队列上调用，这应该不会发生并导致死锁。
+/** 死锁检测，通过查看 -inDatabase: 是否套用并导致死锁。
  */
 static const void * const kDispatchQueueSpecificKey = &kDispatchQueueSpecificKey;
 
@@ -72,6 +69,7 @@ static const void * const kDispatchQueueSpecificKey = &kDispatchQueueSpecificKey
         FMDBRetain(_db);
         
 #if SQLITE_VERSION_NUMBER >= 3005000
+        //在创建数据库的时候，默认打开数据库！
         BOOL success = [_db openWithFlags:openFlags vfs:vfsName];
 #else
         BOOL success = [_db open];
@@ -84,11 +82,11 @@ static const void * const kDispatchQueueSpecificKey = &kDispatchQueueSpecificKey
         
         _path = FMDBReturnRetained(aPath);
         _queue = dispatch_queue_create([[NSString stringWithFormat:@"fmdb.%@", self] UTF8String], NULL);
+        //为 _queue 设置标识数据：指定的键，值为 self 的地址
         dispatch_queue_set_specific(_queue, kDispatchQueueSpecificKey, (__bridge void *)self, NULL);
         _openFlags = openFlags;
         _vfsName = [vfsName copy];
     }
-    
     return self;
 }
 
@@ -165,16 +163,12 @@ static const void * const kDispatchQueueSpecificKey = &kDispatchQueueSpecificKey
 
 - (void)inDatabase:(__attribute__((noescape)) void (^)(FMDatabase *db))block {
 #ifndef NDEBUG
-    //获取当前正在执行的队列(可能为nil，但理论上可以是另一个DB队列)
-    //然后检查self，确保我们不会死锁。
-    /* Get the currently executing queue (which should probably be nil, but in theory could be another DB queue
-     * and then check it against self to make sure we're not about to deadlock. */
+    //断言：确保 inDatabase: 不会套用造成死锁
     FMDatabaseQueue *currentSyncQueue = (__bridge id)dispatch_get_specific(kDispatchQueueSpecificKey);
     assert(currentSyncQueue != self && "inDatabase: was called reentrantly on the same queue, which would lead to a deadlock");
 #endif
     
     FMDBRetain(self);
-    
     dispatch_sync(_queue, ^() {//同步执行串行队列
         
         FMDatabase *db = [self database];
@@ -200,13 +194,13 @@ static const void * const kDispatchQueueSpecificKey = &kDispatchQueueSpecificKey
         BOOL shouldRollback = NO;
         switch (transaction) {
             case FMDBTransactionExclusive:
-                [[self database] beginTransaction];
+                [[self database] beginTransaction];//默认开始互斥事务
                 break;
             case FMDBTransactionDeferred:
-                [[self database] beginDeferredTransaction];
+                [[self database] beginDeferredTransaction];//开始一个延迟事务
                 break;
             case FMDBTransactionImmediate:
-                [[self database] beginImmediateTransaction];
+                [[self database] beginImmediateTransaction];//立即开启事务
                 break;
         }
         block([self database], &shouldRollback);
@@ -241,21 +235,16 @@ static const void * const kDispatchQueueSpecificKey = &kDispatchQueueSpecificKey
     __block NSError *err = 0x00;
     FMDBRetain(self);
     dispatch_sync(_queue, ^() { 
-        
         NSString *name = [NSString stringWithFormat:@"savePoint%ld", savePointIdx++];
-        
         BOOL shouldRollback = NO;
-        
-        if ([[self database] startSavePointWithName:name error:&err]) {
-            
+        if ([[self database] startSavePointWithName:name error:&err]) {// 设置保存点
             block([self database], &shouldRollback);
-            
-            if (shouldRollback) {
-                // We need to rollback and release this savepoint to remove it
+            if (shouldRollback) {//如果需要回滚
+                //回滚到保存点
                 [[self database] rollbackToSavePointWithName:name error:&err];
             }
+            //刪除保存点
             [[self database] releaseSavePointWithName:name error:&err];
-            
         }
     });
     FMDBRelease(self);
@@ -267,18 +256,15 @@ static const void * const kDispatchQueueSpecificKey = &kDispatchQueueSpecificKey
 #endif
 }
 
-- (BOOL)checkpoint:(FMDBCheckpointMode)mode error:(NSError * __autoreleasing *)error
-{
+- (BOOL)checkpoint:(FMDBCheckpointMode)mode error:(NSError * __autoreleasing *)error{
     return [self checkpoint:mode name:nil logFrameCount:NULL checkpointCount:NULL error:error];
 }
 
-- (BOOL)checkpoint:(FMDBCheckpointMode)mode name:(NSString *)name error:(NSError * __autoreleasing *)error
-{
+- (BOOL)checkpoint:(FMDBCheckpointMode)mode name:(NSString *)name error:(NSError * __autoreleasing *)error{
     return [self checkpoint:mode name:name logFrameCount:NULL checkpointCount:NULL error:error];
 }
 
-- (BOOL)checkpoint:(FMDBCheckpointMode)mode name:(NSString *)name logFrameCount:(int * _Nullable)logFrameCount checkpointCount:(int * _Nullable)checkpointCount error:(NSError * __autoreleasing _Nullable * _Nullable)error
-{
+- (BOOL)checkpoint:(FMDBCheckpointMode)mode name:(NSString *)name logFrameCount:(int * _Nullable)logFrameCount checkpointCount:(int * _Nullable)checkpointCount error:(NSError * __autoreleasing _Nullable * _Nullable)error{
     __block BOOL result;
     __block NSError *blockError;
     

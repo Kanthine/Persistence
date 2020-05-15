@@ -82,18 +82,13 @@
 }
 
 - (void)kvcMagic:(id)object {
-    
-    int columnCount = sqlite3_column_count([_statement statement]);
-    
+    int columnCount = sqlite3_column_count([_statement statement]);//用sqlite3方法取出该表的列数
+    //遍历结果集
     int columnIdx = 0;
     for (columnIdx = 0; columnIdx < columnCount; columnIdx++) {
-        
-        const char *c = (const char *)sqlite3_column_text([_statement statement], columnIdx);
-        
-        // check for a null row
-        if (c) {
+        const char *c = (const char *)sqlite3_column_text([_statement statement], columnIdx);//取出该列的列名
+        if (c) {//在列名不为空的情况下，使用KVC给Object的属性赋值
             NSString *s = [NSString stringWithUTF8String:c];
-            
             [object setValue:s forKey:[NSString stringWithUTF8String:sqlite3_column_name([_statement statement], columnIdx)]];
         }
     }

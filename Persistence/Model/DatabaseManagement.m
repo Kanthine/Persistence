@@ -154,6 +154,7 @@ NSString *groupSqliteFile(void){
         
         FMResultSet *resultSet = database.getSchema;
         while ([resultSet next]){
+            
             NSString *tbl_name = [resultSet stringForColumn:@"tbl_name"];
             if (tbl_name) {
                 NSString *dropSql = [NSString stringWithFormat:@"DROP TABLE IF EXISTS %@",tbl_name];
@@ -192,9 +193,9 @@ NSString *groupSqliteFile(void){
         NSLog(@"userVersion ---- %u",db.userVersion);
         NSLog(@"applicationID -- %d",db.applicationID);
         
-//        resultSet = [db getTableSchema:@"PhoneCodeModel"];
+//        FMResultSet *resultSet = [db getTableSchema:@"Persons"];
 //        while ([resultSet next]){
-//            NSLog(@"getSchema ====== %@",resultSet.resultDictionary);
+//            NSLog(@"Persons Schema ： %@",resultSet.resultDictionary);
 //        }
 //        [resultSet close];
     }];

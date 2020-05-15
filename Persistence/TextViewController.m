@@ -11,6 +11,7 @@
 #import "ProvincesModel+DAO.h"
 #import "DatabaseManagement.h"
 #import "Persons.h"
+#import "FMDatabaseQueue.h"
 
 @interface TextViewController ()
 @property (weak, nonatomic) IBOutlet UITextField *chineseTextField;
@@ -27,7 +28,29 @@
     [super viewDidLoad];
     // Do any additional setup after loading the view from its nib.
     
-    [DatabaseManagement info];
+//    [DatabaseManagement info];
+    
+    printf(" \n\n\n --------------- \n");
+    FMDatabaseQueue *queue1 = [[FMDatabaseQueue alloc] initWithPath:@""];
+    [queue1 inDatabase:^(FMDatabase * _Nonnull db) {
+        
+    }];
+    printf(" \n\n\n --------------- \n");
+    FMDatabaseQueue *queue2 = [[FMDatabaseQueue alloc] initWithPath:@""];
+    [queue2 inDatabase:^(FMDatabase * _Nonnull db) {
+        [queue1 inDatabase:^(FMDatabase * _Nonnull db) {
+            
+        }];
+    }];
+    
+    printf(" \n\n\n --------------- \n");
+    FMDatabaseQueue *queue3 = [[FMDatabaseQueue alloc] initWithPath:@""];
+    [queue3 inDatabase:^(FMDatabase * _Nonnull db) {
+        [queue3 inDatabase:^(FMDatabase * _Nonnull db) {
+            
+        }];
+    }];
+
 }
 
 - (PhoneCodeModel *)phoneCodeModel{

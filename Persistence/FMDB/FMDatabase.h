@@ -282,14 +282,6 @@ typedef NS_ENUM(int, FMDBCheckpointMode) {
 - (FMResultSet * _Nullable)executeQuery:(NSString *)sql withArgumentsInArray:(NSArray *)arguments;
 - (FMResultSet * _Nullable)executeQuery:(NSString *)sql withParameterDictionary:(NSDictionary * _Nullable)arguments;
 - (FMResultSet * _Nullable)executeQuery:(NSString *)sql withVAList:(va_list)args;
-
-
-/** 执行查询
- *
- * @note [db executeQueryWithFormat:@"SELECT * FROM test WHERE name=%@", @"Gus"];
- * @note [db executeQuery:@"SELECT * FROM test WHERE name=?", @"Gus"];
- * @note '%@'、'%d'等样式的转义序列只允许使用在SQLite 语句 占位符`?` 的地方。不能用于表名、列名或任何其他非值上下文；此方法也不能与 pragma 语句之类的语句一起使用。
- */
 - (FMResultSet * _Nullable)executeQueryWithFormat:(NSString*)format, ... NS_FORMAT_FUNCTION(1,2);
 
 
@@ -362,6 +354,11 @@ typedef NS_ENUM(int, FMDBCheckpointMode) {
 @property (nonatomic, readonly) BOOL hasOpenResultSets;
 
 /** 是否应该缓存 statements
+ * 主要功能是将客户端提交给数据库的 select 请求的返回结果集缓存到内存中，与该查询的一个 hash 值 做一个对应。
+ * 该查询所取数据的基表发生任何数据的变化之后，MySQL 会自动使该查询的缓存失效。
+ * 读写比例非常高时，设置缓存对性能的提高是非常显著的。当然它对内存的消耗也是非常大的。
+ * 如果查询缓存有命中的查询结果，查询语句就可以直接去查询缓存中取数据。
+ * 这个缓存机制是由一系列小缓存组成的。比如表缓存，记录缓存，key缓存，权限缓存等
  */
 @property (nonatomic) BOOL shouldCacheStatements;
 
@@ -441,7 +438,6 @@ typedef NS_ENUM(int, FMDBCheckpointMode) {
  */
 - (NSError *)lastError;
 
-
 /** 记录当前操作数据库的线程的最大停顿时间
  * 在这段时间里它会判断是否有其它线程在操作数据库，如果有则等待其它线程操作数据库结束
  */
@@ -479,8 +475,8 @@ typedef NS_ENUM(int, FMDBCheckpointMode) {
 
 ///-----------------
 /// @name Checkpoint
-/// 检查点只是一个数据库事件，它存在的根本意义在于减少崩溃恢复 Crash Recovery 时间
-/// 当修改数据时，需要首先将数据读入内存中 Buffer Cache，修改数据的同时，Oracle会记录重做信息（Redo）用于恢复。
+/// 检查点只是一个数据库事件，它存在的根本意义在于减少崩溃恢复时间
+/// 当修改数据时，需要首先将数据读入内存 Buffer Cache 中，修改数据的同时，Oracle会记录重做信息（Redo）用于恢复。
 /// 因为有了重做信息的存在，Oracle 不需要在提交时立即将变化的数据写回磁盘（立即写的效率会很低），
 /// 重做（Redo）的存在也正是为了在数据库崩溃之后，数据就可以恢复。
 ///

@@ -21,22 +21,22 @@ NS_ASSUME_NONNULL_BEGIN
  */
 @interface FMResultSet : NSObject
 
+//数据库的实例
 @property (nonatomic, retain, nullable) FMDatabase *parentDB;
 
 ///-----------------
 /// @name Properties
 ///-----------------
 
-/** 执行查询
- */
+/** 查询出该结果集所使用的SQL语句 */
 @property (atomic, retain, nullable) NSString *query;
 
-/** NSMutableDictionary 将列名映射到数字索引
+/** 将列名称 映射到 数字索引
+ * 数字索引从 0 开始
  */
 @property (readonly) NSMutableDictionary *columnNameToIndexMap;
 
-/** `FMStatement` used by result set.
- */
+/** `FMStatement` used by result set. */
 @property (atomic, retain, nullable) FMStatement *statement;
 
 ///------------------------------------
@@ -66,9 +66,9 @@ NS_ASSUME_NONNULL_BEGIN
 - (BOOL)next;
 - (BOOL)nextWithError:(NSError * _Nullable __autoreleasing *)outErr;
 
-/** 最后一次调用 -next 成功获取另一行了吗?
+/** 是否还有下一行数据
  * @return 如果最后一次调用 -next 成功获取另一条记录，则为' YES ';否则为 NO
- * @note -hasAnotherRow 方法必须跟随 -next 的调用。如果前面的数据库交互不是对 -next 的调用，那么该方法可能返回 NO，不管是否有另一行数据。
+ * @note 该方法必须跟随 -next 的调用。如果前面的数据库交互不是对 -next 的调用，那么该方法可能返回 NO，不管是否有下一行数据。
  */
 - (BOOL)hasAnotherRow;
 
@@ -76,8 +76,7 @@ NS_ASSUME_NONNULL_BEGIN
 /// @name 从结果集检索信息
 ///---------------------------------------------
 
-/** 结果集中有多少列
- */
+/** 结果集中有多少列 */
 @property (nonatomic, readonly) int columnCount;
 
 /** 指定列名称的列索引
@@ -86,8 +85,7 @@ NS_ASSUME_NONNULL_BEGIN
  */
 - (int)columnIndexForName:(NSString*)columnName;
 
-/** 指定列索引的列名称
- */
+/** 指定列索引的列名称 */
 - (NSString * _Nullable)columnNameForIndex:(int)columnIdx;
 
 #pragma mark - 根据指定的列名称或者列索引，获取某一行中该列的值
@@ -153,21 +151,14 @@ NS_ASSUME_NONNULL_BEGIN
 - (BOOL)columnIsNull:(NSString*)columnName;
 
 
-/** 返回映射到列名大小写敏感键的行结果的字典。
- * Returns a dictionary of the row results mapped to case sensitive keys of the column names.
- * @warning 键值区分大小写
- */
+/** 返回列名为键，列内容为值的字典。 键区分大小写  */
 @property (nonatomic, readonly, nullable) NSDictionary *resultDictionary;
 - (NSDictionary * _Nullable)resultDict __deprecated_msg("Use resultDictionary instead");
 
-///-----------------------------
-/// @name Key value coding magic
-///-----------------------------
 
-/** Performs `setValue` to yield support for key value observing.
- * @param object The object for which the values will be set. This is the key-value-coding compliant object that you might, for example, observe.
+/** 使用KVC，把数据库中的每一行数据对应到每一个对象，对象的属性要和数据库的列名保持一直
+ * @note 只能给NSString类型的属性赋值
  */
-
 - (void)kvcMagic:(id)object;
 
  
