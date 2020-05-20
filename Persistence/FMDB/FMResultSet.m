@@ -60,6 +60,8 @@
     
     // we don't need this anymore... (i think)
     //[_parentDB setInUse:NO];
+    
+    /** FMResultSet 关闭时，需要FMDatabase从 _openResultSets 移除该结果集 */
     [_parentDB resultSetDidClose:self];
     [self setParentDB:nil];
 }

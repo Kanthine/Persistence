@@ -12,7 +12,7 @@
 
 {
     void*               _db;//打开的SQLite数据库
-    BOOL                _isExecutingStatement;
+    BOOL                _isExecutingStatement;//是否正在执行 Sql 语句
     NSTimeInterval      _startBusyRetryTime;
     
     NSMutableSet        *_openResultSets;
@@ -37,9 +37,10 @@ NS_ASSUME_NONNULL_END
 
 #pragma mark FMDatabase 实例化、释放
 
-// FMDBReturnAutoReleased() 是为了兼容MRC和ARC
-//FMDatabase 实例化 本质上只是给了数据库一个名字，并没有真实创建或者获取数据库。
-// -open 方法才是真正获取到数据库，其本质调用SQLite的 sqlite3_open() 函数
+/** FMDBReturnAutoReleased() 是为了兼容MRC和ARC
+ * FMDatabase 实例化 本质上只是给了数据库一个名字，并没有真实创建或者获取数据库。
+ * -open 方法才是真正获取到数据库，其本质调用SQLite的 sqlite3_open() 函数
+ */
 + (instancetype)databaseWithPath:(NSString *)aPath {
     return FMDBReturnAutoreleased([[self alloc] initWithPath:aPath]);
 }
@@ -57,7 +58,7 @@ NS_ASSUME_NONNULL_END
 }
 
 - (instancetype)initWithPath:(NSString *)path {
-    assert(sqlite3_threadsafe()); // whoa there big boy- gotta make sure sqlite it happy with what we're going to do.
+    assert(sqlite3_threadsafe());
     self = [super init];
     if (self) {
         _databasePath               = [path copy];
@@ -65,7 +66,7 @@ NS_ASSUME_NONNULL_END
         _db                         = nil;//数据库为空
         _logsErrors                 = YES;
         _crashOnErrors              = NO;
-        _maxBusyRetryTimeInterval   = 2;
+        _maxBusyRetryTimeInterval   = 2;//默认为 2S
         _isOpen                     = NO;//默认数据库关闭
     }
     return self;
@@ -99,16 +100,10 @@ NS_ASSUME_NONNULL_END
     return @"2.7.6";
 }
 
-// returns 0x0240 for version 2.4.  This makes it super easy to do things like:
-// /* need to make sure to do X with FMDB version 2.4 or later */
-// if ([FMDatabase FMDBVersion] >= 0x0240) { … }
-
+/** FMDBVersion 版本号 **/
 + (SInt32)FMDBVersion {
-    
-    // we go through these hoops so that we only have to change the version number in a single spot.
     static dispatch_once_t once;
     static SInt32 FMDBVersionVal = 0;
-    
     dispatch_once(&once, ^{
         NSString *prodVersion = [self FMDBUserVersion];
         if ([[prodVersion componentsSeparatedByString:@"."] count] < 3) {
@@ -118,12 +113,10 @@ NS_ASSUME_NONNULL_END
         char *e = nil;
         FMDBVersionVal = (int) strtoul([junk UTF8String], &e, 16);
     });
-    
     return FMDBVersionVal;
 }
 
-/**************  SQLite information  **************/
-
+/**************  SQLite 信息  **************/
 + (NSString*)sqliteLibVersion {
     return [NSString stringWithFormat:@"%s", sqlite3_libversion()];
 }
@@ -168,7 +161,7 @@ int sqlite3_open(const char *filename,sqlite3 **ppDb);
         [self close];
     }
     
-    //调用sqlite3_open()函数创建数据库
+    /***** 创建数据库 ****/
     int err = sqlite3_open([self sqlitePath], (sqlite3**)&_db);
     if(err != SQLITE_OK) {
         NSLog(@"error opening!: %d", err);
@@ -184,7 +177,6 @@ int sqlite3_open(const char *filename,sqlite3 **ppDb);
 }
 
 
-
 - (BOOL)openWithFlags:(int)flags {
     return [self openWithFlags:flags vfs:nil];
 }
@@ -197,9 +189,7 @@ int sqlite3_open(const char *filename,sqlite3 **ppDb);
     if (_db) {// 如果之前尝试打开但失败，请确保在再次尝试之前关闭它
         [self close];
     }
-    
-    // now open database
-    
+        
     int err = sqlite3_open_v2([self sqlitePath], (sqlite3**)&_db, flags, [vfsName UTF8String]);
     if(err != SQLITE_OK) {
         NSLog(@"error opening!: %d", err);
@@ -262,12 +252,15 @@ int sqlite3_open(const char *filename,sqlite3 **ppDb);
 //       C function causes problems; the rest don't. Anyway, ignoring the .m
 //       files with appledoc will prevent this problem from occurring.
 
-// 该函数就是简单调用 sqlite3_sleep() 来挂起线程
+/** 该函数就是简单调用 sqlite3_sleep() 来挂起线程
+ * @param count 表示这次锁事件，该回调函数被调用的次数。
+ * @return 如果返回０时，将不再尝试再次访问数据库而返回SQLITE_BUSY或者SQLITE_IOERR_BLOCKED。
+ *         如果回调函数返回非０,　将会不断尝试操作数据库。
+ */
 static int FMDBDatabaseBusyHandler(void *f, int count) {
     FMDatabase *self = (__bridge FMDatabase*)f;
-    
     if (count == 0) {// count为0，表示第一次执行回调函数
-        self->_startBusyRetryTime = [NSDate timeIntervalSinceReferenceDate];
+        self->_startBusyRetryTime = [NSDate timeIntervalSinceReferenceDate];//以2001/01/01 GMT为基准时间，返回实例保存的时间与2001/01/01 GMT的时间间隔
         return 1;
     }
     
@@ -292,31 +285,21 @@ static int FMDBDatabaseBusyHandler(void *f, int count) {
     return 0;
 }
 
-/** 程序运行过程中，如果有其他进程或者线程在读写数据库，那么sqlite3_busy_handler() 会不断调用回调函数，直到其他进程或者线程释放锁。
+/** 最大繁忙重试时间间隔
+ *
+ * 程序运行过程中，如果有其它线程在读写数据库，那么sqlite3_busy_handler() 会不断调用回调函数，直到其他进程或者线程释放锁。
  * 获得锁之后，不会再调用回调函数，从而向下执行，进行数据库操作。
  * 该函数是在获取不到锁的时候，以执行回调函数的次数来进行延迟，等待其他进程或者线程操作数据库结束，从而获得锁操作数据库。
- 
- 
- 第一个参数: 告知哪个数据库需要设置busy handler。
- 第二个参数: 回调函数，当你调用该回调函数时，需传递给它的一个void*的参数的拷贝，也即sqlite3_busy_handler()的第三个参数；
-           另一个需要传给回调函数的int参数是表示这次锁事件，该回调函数被调用的次数。如果回调函数返回０时，将不再尝试再次访问数据库而返回SQLITE_BUSY或者SQLITE_IOERR_BLOCKED。如果回调函数返回非０,　将会不断尝试操作数据库。
-
- 
- int sqlite3_busy_handler(sqlite3*,int(*)(void*,int),void*);
- */
-
-/**
+ *
+ *
  * SQLITE_API int sqlite3_busy_handler(sqlite3*,int(*)(void*,int),void*);
- * param1 哪个数据库需要设置busy_handler
- * param2 需要回调的busy handler，调用次函数时，需要传参，是sqlite3_busy_handler第三个参数
+ * param1 告知哪个数据库需要设置 busy_handler
+ * param2 回调函数，该函数的参数是sqlite3_busy_handler()第三个参数
  * param3 int参数代表锁事件，该函数被调用次数，如果返回为0，不会再次访问数据库，返回非0，将不断尝试访问数据库。
  * 当获取不到锁时，会执行回调函数的次数以此来延时，等待其他线程等操作完数据库，这样获得操作数据库。
  */
 - (void)setMaxBusyRetryTimeInterval:(NSTimeInterval)timeout {
-    //默认_maxBusyRetryTimeInterval为2
-
     _maxBusyRetryTimeInterval = timeout;
-    
     if (!_db) {
         return;
     }
@@ -351,13 +334,13 @@ static int FMDBDatabaseBusyHandler(void *f, int count) {
 
 #pragma mark Result set functions
 
+/** 是否有打开的结果集 ***/
 - (BOOL)hasOpenResultSets {
     return [_openResultSets count] > 0;
 }
 
+/** 关闭结所有打开的结果集 ***/
 - (void)closeOpenResultSets {
-    
-    //Copy the set so we don't get mutation errors
     NSSet *openSetCopy = FMDBReturnAutoreleased([_openResultSets copy]);
     for (NSValue *rsInWrappedInATastyValueMeal in openSetCopy) {
         FMResultSet *rs = (FMResultSet *)[rsInWrappedInATastyValueMeal pointerValue];
@@ -367,14 +350,15 @@ static int FMDBDatabaseBusyHandler(void *f, int count) {
     }
 }
 
+/** FMResultSet 关闭时，需要FMDatabase从 _openResultSets 移除该结果集
+ */
 - (void)resultSetDidClose:(FMResultSet *)resultSet {
     NSValue *setValue = [NSValue valueWithNonretainedObject:resultSet];
-    
     [_openResultSets removeObject:setValue];
 }
 
 #pragma mark Cached statements
-
+/** 清除缓存语句 */
 - (void)clearCachedStatements {
     for (NSMutableSet *statements in [_cachedStatements objectEnumerator]) {
         for (FMStatement *statement in [statements allObjects]) {
@@ -384,19 +368,17 @@ static int FMDBDatabaseBusyHandler(void *f, int count) {
     [_cachedStatements removeAllObjects];
 }
 
+/** 查询缓存语句 */
 - (FMStatement*)cachedStatementForQuery:(NSString*)query {
-    
     NSMutableSet* statements = [_cachedStatements objectForKey:query];
-    
     return [[statements objectsPassingTest:^BOOL(FMStatement* statement, BOOL *stop) {
-        
         *stop = ![statement inUse];
         return *stop;
         
     }] anyObject];
 }
 
-
+/** 设置缓存语句 */
 - (void)setCachedStatement:(FMStatement*)statement forQuery:(NSString*)query {
     NSParameterAssert(query);
     if (!query) {
@@ -404,29 +386,27 @@ static int FMDBDatabaseBusyHandler(void *f, int count) {
         return;
     }
     
-    query = [query copy]; // in case we got handed in a mutable string...
+    query = [query copy];
     [statement setQuery:query];
     
     NSMutableSet* statements = [_cachedStatements objectForKey:query];
     if (!statements) {
         statements = [NSMutableSet set];
     }
-    
     [statements addObject:statement];
-    
     [_cachedStatements setObject:statements forKey:query];
-    
     FMDBRelease(query);
 }
 
-#pragma mark Key routines
+#pragma mark 数据库加密
 
+/** 重置加密密钥 */
 - (BOOL)rekey:(NSString*)key {
     NSData *keyData = [NSData dataWithBytes:(void *)[key UTF8String] length:(NSUInteger)strlen([key UTF8String])];
-    
     return [self rekeyWithData:keyData];
 }
 
+/** 使用 keyData 重置加密密钥 */
 - (BOOL)rekeyWithData:(NSData *)keyData {
 #ifdef SQLITE_HAS_CODEC
     if (!keyData) {
@@ -447,20 +427,19 @@ static int FMDBDatabaseBusyHandler(void *f, int count) {
 #endif
 }
 
+/** 设置加密密钥 */
 - (BOOL)setKey:(NSString*)key {
     NSData *keyData = [NSData dataWithBytes:[key UTF8String] length:(NSUInteger)strlen([key UTF8String])];
-    
     return [self setKeyWithData:keyData];
 }
 
+/** 使用 keyData 设置加密密钥 */
 - (BOOL)setKeyWithData:(NSData *)keyData {
 #ifdef SQLITE_HAS_CODEC
     if (!keyData) {
         return NO;
     }
-    
     int rc = sqlite3_key(_db, [keyData bytes], (int)[keyData length]);
-    
     return (rc == SQLITE_OK);
 #else
 #pragma unused(keyData)
@@ -468,17 +447,15 @@ static int FMDBDatabaseBusyHandler(void *f, int count) {
 #endif
 }
 
-#pragma mark Date routines
+#pragma mark 日期格式化
 
 + (NSDateFormatter *)storeableDateFormat:(NSString *)format {
-    
     NSDateFormatter *result = FMDBReturnAutoreleased([[NSDateFormatter alloc] init]);
     result.dateFormat = format;
     result.timeZone = [NSTimeZone timeZoneForSecondsFromGMT:0];
     result.locale = FMDBReturnAutoreleased([[NSLocale alloc] initWithLocaleIdentifier:@"en_US"]);
     return result;
 }
-
 
 - (BOOL)hasDateFormatter {
     return _dateFormat != nil;
@@ -497,15 +474,14 @@ static int FMDBDatabaseBusyHandler(void *f, int count) {
     return [_dateFormat stringFromDate:date];
 }
 
-#pragma mark State of database
+#pragma mark 数据库状态
 
 - (BOOL)goodConnection {
-    
     //1、数据库是否打开
     if (!_isOpen) {
         return NO;
     }
-    
+
     //2、尝试一个简单的 SELECT 语句并确认成功
 #ifdef SQLCIPHER_CRYPTO
     FMResultSet *rs = [self executeQuery:@"PRAGMA cipher_version"];
@@ -524,6 +500,7 @@ static int FMDBDatabaseBusyHandler(void *f, int count) {
     return NO;
 }
 
+//警告开发者：FMDatabase 正在使用中
 - (void)warnInUse {
     NSLog(@"The FMDatabase %@ is currently in use.", self);
     
@@ -535,10 +512,9 @@ static int FMDBDatabaseBusyHandler(void *f, int count) {
 #endif
 }
 
+//数据库是否存在
 - (BOOL)databaseExists {
-    
     if (!_isOpen) {
-        
         NSLog(@"The FMDatabase %@ is not open.", self);
         
 #ifndef NS_BLOCK_ASSERTIONS
@@ -550,11 +526,10 @@ static int FMDBDatabaseBusyHandler(void *f, int count) {
         
         return NO;
     }
-    
     return YES;
 }
 
-#pragma mark Error routines
+#pragma mark 错误日志
 
 - (NSString *)lastErrorMessage {
     return [NSString stringWithUTF8String:sqlite3_errmsg(_db)];
@@ -562,7 +537,6 @@ static int FMDBDatabaseBusyHandler(void *f, int count) {
 
 - (BOOL)hadError {
     int lastErrCode = [self lastErrorCode];
-    
     return (lastErrCode > SQLITE_OK && lastErrCode < SQLITE_ROW);
 }
 
@@ -576,7 +550,6 @@ static int FMDBDatabaseBusyHandler(void *f, int count) {
 
 - (NSError*)errorWithMessage:(NSString *)message {
     NSDictionary* errorMessage = [NSDictionary dictionaryWithObject:message forKey:NSLocalizedDescriptionKey];
-    
     return [NSError errorWithDomain:@"FMDatabase" code:sqlite3_errcode(_db) userInfo:errorMessage];
 }
 
@@ -584,36 +557,34 @@ static int FMDBDatabaseBusyHandler(void *f, int count) {
     return [self errorWithMessage:[self lastErrorMessage]];
 }
 
-#pragma mark Update information routines
+#pragma mark 更新语句信息
 
+/** 获取最后插入一行的主键 id
+ * @note 如果数据库连接上从未发生过成功的 INSERT，则返回 0
+ */
 - (sqlite_int64)lastInsertRowId {
-    
-    if (_isExecutingStatement) {
+    if (_isExecutingStatement) {//正在执行 Sql 语句
         [self warnInUse];
         return NO;
     }
-    
     _isExecutingStatement = YES;
-    
     sqlite_int64 ret = sqlite3_last_insert_rowid(_db);
-    
     _isExecutingStatement = NO;
-    
     return ret;
 }
 
+/** 前一个 SQL 语句更改了多少行
+ * @note 只计算由INSERT、UPDATE或DELETE语句直接指定的更改的数据库行数
+*/
 - (int)changes {
-    if (_isExecutingStatement) {
+    if (_isExecutingStatement) {//正在执行 Sql 语句
         [self warnInUse];
         return 0;
     }
     
     _isExecutingStatement = YES;
-    
     int ret = sqlite3_changes(_db);
-    
     _isExecutingStatement = NO;
-    
     return ret;
 }
 
@@ -1433,6 +1404,7 @@ SET TRANSACTION 用来设置事务的隔离级别。InnoDB 存储引擎提供事
     return _isInTransaction;
 }
 
+/** 中断数据库的所有操作 **/
 - (BOOL)interrupt{
     if (_db) {
         sqlite3_interrupt([self sqliteHandle]);
@@ -1530,8 +1502,7 @@ static NSString *FMDBEscapeSavePointName(NSString *savepointName) {
     return [self checkpoint:checkpointMode name:name logFrameCount:NULL checkpointCount:NULL error:error];
 }
 
-- (BOOL)checkpoint:(FMDBCheckpointMode)checkpointMode name:(NSString *)name logFrameCount:(int *)logFrameCount checkpointCount:(int *)checkpointCount error:(NSError * __autoreleasing *)error
-{
+- (BOOL)checkpoint:(FMDBCheckpointMode)checkpointMode name:(NSString *)name logFrameCount:(int *)logFrameCount checkpointCount:(int *)checkpointCount error:(NSError * __autoreleasing *)error{
     const char* dbName = [name UTF8String];
 #if SQLITE_VERSION_NUMBER >= 3007006
     int err = sqlite3_wal_checkpoint_v2(_db, dbName, checkpointMode, logFrameCount, checkpointCount);
@@ -1554,22 +1525,20 @@ static NSString *FMDBEscapeSavePointName(NSString *savepointName) {
     }
 }
 
-#pragma mark Cache statements
+#pragma mark 缓存Sql
 
+//是否需要缓存
 - (BOOL)shouldCacheStatements {
     return _shouldCacheStatements;
 }
 
 - (void)setShouldCacheStatements:(BOOL)value {
-    
     _shouldCacheStatements = value;
-    
     if (_shouldCacheStatements && !_cachedStatements) {
         [self setCachedStatements:[NSMutableDictionary dictionary]];
     }
-    
     if (!_shouldCacheStatements) {
-        [self setCachedStatements:nil];
+        [self setCachedStatements:nil];//清空缓存数据
     }
 }
 
@@ -1706,7 +1675,6 @@ void FMDBBlockSQLiteCallBackFunction(sqlite3_context *context, int argc, sqlite3
         sqlite3_finalize(_statement);
         _statement = 0x00;
     }
-    
     _inUse = NO;
 }
 
@@ -1714,7 +1682,6 @@ void FMDBBlockSQLiteCallBackFunction(sqlite3_context *context, int argc, sqlite3
     if (_statement) {
         sqlite3_reset(_statement);
     }
-    
     _inUse = NO;
 }
 

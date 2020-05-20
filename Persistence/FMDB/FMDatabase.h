@@ -697,8 +697,14 @@ typedef NS_ENUM(int, SqliteValueType) {
 @end
 
 
-/** Objective-C wrapper for `sqlite3_stmt`
- * 对 sqlite3_stmt 的封装。通常在使用FMDB时，不需要直接与' FMStatement '进行交互，而只需与 FMDatabase 和 FMResultSet 进行交互。
+/** FMDB使用Cached Statement功能
+ *
+ * 在SQLite中，所有的SQL语句都会被编译，形成预处理语句Prepared Statements，然后被执行。
+ * SQLite使用结构sqlite3_stmt 来保存Prepared Statements，并提供一系列的方法。
+ *
+ * 在FMDB中，类FMStatement封装了sqlite3_stmt 供其他类进行调用；Cached Statement功能可以提高SQLite数据库访问。
+ * 在开发中，如果执行的SQL语句大量重复，使用该功能可以提升App性能。
+ * 但如果不重复，则可以考虑关闭该功能，以节省资源。在FMDB中，开发者可以使用setShouldCacheStatements方法开启或关闭该功能，并使用shouldCacheStatements方法判断状态。当使用完，可以使用clearCachedStatements方法清空缓存。
  */
 @interface FMStatement : NSObject {
     void *_statement;
@@ -707,39 +713,23 @@ typedef NS_ENUM(int, SqliteValueType) {
     BOOL _inUse;
 }
 
-///-----------------
-/// @name Properties
-///-----------------
-
-/** Usage count */
-
+/** 使用计数 */
 @property (atomic, assign) long useCount;
 
-/** SQL statement */
-
+/** SQL语句 */
 @property (atomic, retain) NSString *query;
 
-/** SQLite sqlite3_stmt
- 
- @see [`sqlite3_stmt`](http://www.sqlite.org/c3ref/stmt.html)
+/** SQLite [sqlite3_stmt](http://www.sqlite.org/c3ref/stmt.html)
  */
-
 @property (atomic, assign) void *statement;
 
-/** Indication of whether the statement is in use */
-
+/** 是否正在使用 */
 @property (atomic, assign) BOOL inUse;
 
-///----------------------------
-/// @name Closing and Resetting
-///----------------------------
-
-/** Close statement */
-
+/** 关闭 */
 - (void)close;
 
-/** Reset statement */
-
+/** 重置  */
 - (void)reset;
 
 @end
