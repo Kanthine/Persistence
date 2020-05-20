@@ -176,7 +176,6 @@ int sqlite3_open(const char *filename,sqlite3 **ppDb);
     return YES;
 }
 
-
 - (BOOL)openWithFlags:(int)flags {
     return [self openWithFlags:flags vfs:nil];
 }
@@ -332,7 +331,7 @@ static int FMDBDatabaseBusyHandler(void *f, int count) {
     NSLog(@"FMDB: setBusyRetryTimeout does nothing, please use setMaxBusyRetryTimeInterval:");
 }
 
-#pragma mark Result set functions
+#pragma mark 结果集
 
 /** 是否有打开的结果集 ***/
 - (BOOL)hasOpenResultSets {
@@ -357,7 +356,8 @@ static int FMDBDatabaseBusyHandler(void *f, int count) {
     [_openResultSets removeObject:setValue];
 }
 
-#pragma mark Cached statements
+#pragma mark 缓存语句
+
 /** 清除缓存语句 */
 - (void)clearCachedStatements {
     for (NSMutableSet *statements in [_cachedStatements objectEnumerator]) {
@@ -374,7 +374,6 @@ static int FMDBDatabaseBusyHandler(void *f, int count) {
     return [[statements objectsPassingTest:^BOOL(FMStatement* statement, BOOL *stop) {
         *stop = ![statement inUse];
         return *stop;
-        
     }] anyObject];
 }
 
@@ -523,7 +522,6 @@ static int FMDBDatabaseBusyHandler(void *f, int count) {
             abort();
         }
 #endif
-        
         return NO;
     }
     return YES;
@@ -590,74 +588,63 @@ static int FMDBDatabaseBusyHandler(void *f, int count) {
 
 #pragma mark SQL manipulation
 
+/** 将变量插入到字段中
+ 
+ int sqlite3_bind_text(sqlite3_stmt*,int,const char*,int,void(*)(void*));
+ 
+ 参数绑定：
+ 和大多数关系型数据库一样，SQLite的Sql 语句也支持变量绑定，以便减少SQL语句被动态解析的次数，从而提高数据查询和数据操作的效率。
+ 要完成该操作，需要使用SQLite提供的另外两个接口sqlite3_reset() 和 sqlite3_bind()
+ */
+
 - (void)bindObject:(id)obj toColumn:(int)idx inStatement:(sqlite3_stmt*)pStmt {
     
-    if ((!obj) || ((NSNull *)obj == [NSNull null])) {
+    if ((!obj) || ((NSNull *)obj == [NSNull null])) {//obj 为 nil
         sqlite3_bind_null(pStmt, idx);
-    }
-    
-    // FIXME - someday check the return codes on these binds.
-    else if ([obj isKindOfClass:[NSData class]]) {
+    }else if ([obj isKindOfClass:[NSData class]]) {//绑定 NSData
         const void *bytes = [obj bytes];
         if (!bytes) {
-            // it's an empty NSData object, aka [NSData data].
-            // Don't pass a NULL pointer, or sqlite will bind a SQL null instead of a blob.
+            // 一个空的 NSData 对象, 即 [NSData data].
+            // 不要传递空指针，否则sqlite将绑定一个 SQL NULL 而不是一个blob。
             bytes = "";
         }
         sqlite3_bind_blob(pStmt, idx, bytes, (int)[obj length], SQLITE_STATIC);
-    }
-    else if ([obj isKindOfClass:[NSDate class]]) {
+    }else if ([obj isKindOfClass:[NSDate class]]) {// NSDate
         if (self.hasDateFormatter)
             sqlite3_bind_text(pStmt, idx, [[self stringFromDate:obj] UTF8String], -1, SQLITE_STATIC);
         else
             sqlite3_bind_double(pStmt, idx, [obj timeIntervalSince1970]);
-    }
-    else if ([obj isKindOfClass:[NSNumber class]]) {
-        
-        if (strcmp([obj objCType], @encode(char)) == 0) {
+    }else if ([obj isKindOfClass:[NSNumber class]]) {// NSNumber
+        if (strcmp([obj objCType], @encode(char)) == 0) {//char 型
             sqlite3_bind_int(pStmt, idx, [obj charValue]);
-        }
-        else if (strcmp([obj objCType], @encode(unsigned char)) == 0) {
+        }else if (strcmp([obj objCType], @encode(unsigned char)) == 0) {
             sqlite3_bind_int(pStmt, idx, [obj unsignedCharValue]);
-        }
-        else if (strcmp([obj objCType], @encode(short)) == 0) {
+        }else if (strcmp([obj objCType], @encode(short)) == 0) {//short 型
             sqlite3_bind_int(pStmt, idx, [obj shortValue]);
-        }
-        else if (strcmp([obj objCType], @encode(unsigned short)) == 0) {
+        }else if (strcmp([obj objCType], @encode(unsigned short)) == 0) {
             sqlite3_bind_int(pStmt, idx, [obj unsignedShortValue]);
-        }
-        else if (strcmp([obj objCType], @encode(int)) == 0) {
+        }else if (strcmp([obj objCType], @encode(int)) == 0) {//int 型
             sqlite3_bind_int(pStmt, idx, [obj intValue]);
-        }
-        else if (strcmp([obj objCType], @encode(unsigned int)) == 0) {
+        }else if (strcmp([obj objCType], @encode(unsigned int)) == 0) {
             sqlite3_bind_int64(pStmt, idx, (long long)[obj unsignedIntValue]);
-        }
-        else if (strcmp([obj objCType], @encode(long)) == 0) {
+        }else if (strcmp([obj objCType], @encode(long)) == 0) {//long 型
             sqlite3_bind_int64(pStmt, idx, [obj longValue]);
-        }
-        else if (strcmp([obj objCType], @encode(unsigned long)) == 0) {
+        }else if (strcmp([obj objCType], @encode(unsigned long)) == 0) {
             sqlite3_bind_int64(pStmt, idx, (long long)[obj unsignedLongValue]);
-        }
-        else if (strcmp([obj objCType], @encode(long long)) == 0) {
+        }else if (strcmp([obj objCType], @encode(long long)) == 0) {//long long 型
             sqlite3_bind_int64(pStmt, idx, [obj longLongValue]);
-        }
-        else if (strcmp([obj objCType], @encode(unsigned long long)) == 0) {
+        }else if (strcmp([obj objCType], @encode(unsigned long long)) == 0) {
             sqlite3_bind_int64(pStmt, idx, (long long)[obj unsignedLongLongValue]);
-        }
-        else if (strcmp([obj objCType], @encode(float)) == 0) {
+        }else if (strcmp([obj objCType], @encode(float)) == 0) {//float 型
             sqlite3_bind_double(pStmt, idx, [obj floatValue]);
-        }
-        else if (strcmp([obj objCType], @encode(double)) == 0) {
+        }else if (strcmp([obj objCType], @encode(double)) == 0) {//double 型
             sqlite3_bind_double(pStmt, idx, [obj doubleValue]);
-        }
-        else if (strcmp([obj objCType], @encode(BOOL)) == 0) {
+        }else if (strcmp([obj objCType], @encode(BOOL)) == 0) {//BOOL 型
             sqlite3_bind_int(pStmt, idx, ([obj boolValue] ? 1 : 0));
-        }
-        else {
+        }else {//text 型
             sqlite3_bind_text(pStmt, idx, [[obj description] UTF8String], -1, SQLITE_STATIC);
         }
-    }
-    else {
+    }else {// text
         sqlite3_bind_text(pStmt, idx, [[obj description] UTF8String], -1, SQLITE_STATIC);
     }
 }
@@ -782,7 +769,7 @@ static int FMDBDatabaseBusyHandler(void *f, int count) {
     }
 }
 
-#pragma mark Execute queries
+#pragma mark 执行查询
 
 - (FMResultSet *)executeQuery:(NSString *)sql withParameterDictionary:(NSDictionary *)arguments {
     return [self executeQuery:sql withArgumentsInArray:nil orDictionary:arguments orVAList:nil];
@@ -803,46 +790,41 @@ static int FMDBDatabaseBusyHandler(void *f, int count) {
     if (![self databaseExists]) {//判断数据库是否存在
         return 0x00;
     }
-    
-    if (_isExecutingStatement) {//判断数据库是否已经在使用当中
+    if (_isExecutingStatement) {//是否正在执行 Sql 语句
         [self warnInUse];
         return 0x00;
     }
-    
     _isExecutingStatement = YES;
     
     int rc                  = 0x00;
-    sqlite3_stmt *pStmt     = 0x00;
+    sqlite3_stmt *pStmt     = 0x00;//预处理语句
     FMStatement *statement  = 0x00;
-    FMResultSet *rs         = 0x00;
+    FMResultSet *rs         = 0x00;//结果集
     
     if (_traceExecution && sql) {//打印sql语句
         NSLog(@"%@ executeQuery: %@", self, sql);
     }
-    
-    if (_shouldCacheStatements) {//获取缓存数据
+    /********** 获取缓存数据 ********/
+    if (_shouldCacheStatements) {
         statement = [self cachedStatementForQuery:sql];
-        pStmt = statement ? [statement statement] : 0x00;
+        pStmt = statement ? [statement statement] : 0x00;//缓存的预处理语句
         [statement reset];
     }
     
-    if (!pStmt) {//没有缓存数据，直接查询数据库
-        
-        //对sql语句进行预处理，生成预处理过的“sql语句”pStmt。
+    /********** 没有缓存则调用 sqlite3_prepare() 创建 sqlite3_stmt ********/
+    if (!pStmt) {
+        //对sql语句进行预处理，创建 sqlite3_stmt
         rc = sqlite3_prepare_v2(_db, [sql UTF8String], -1, &pStmt, 0);
-        
-        if (SQLITE_OK != rc) {//出错处理
+        if (SQLITE_OK != rc) {//错误处理
             if (_logsErrors) {
                 NSLog(@"DB Error: %d \"%@\"", [self lastErrorCode], [self lastErrorMessage]);
                 NSLog(@"DB Query: %@", sql);
                 NSLog(@"DB Path: %@", _databasePath);
             }
-            
             if (_crashOnErrors) {
                 NSAssert(false, @"DB Error: %d \"%@\"", [self lastErrorCode], [self lastErrorMessage]);
                 abort();
             }
-            
             sqlite3_finalize(pStmt);
             _isExecutingStatement = NO;
             return nil;
@@ -851,7 +833,7 @@ static int FMDBDatabaseBusyHandler(void *f, int count) {
     
     id obj;
     int idx = 0;
-    int queryCount = sqlite3_bind_parameter_count(pStmt); // pointed out by Dominic Yu (thanks!)
+    int queryCount = sqlite3_bind_parameter_count(pStmt);
     
     // If dictionaryArgs is passed in, that means we are using sqlite's named parameter support
     //对dictionaryArgs参数的处理，类似于下面":age"参数形式
@@ -859,14 +841,13 @@ static int FMDBDatabaseBusyHandler(void *f, int count) {
         
         for (NSString *dictionaryKey in [dictionaryArgs allKeys]) {
             
-            // Prefix the key with a colon.
+            // 在键前面加上冒号
             NSString *parameterName = [[NSString alloc] initWithFormat:@":%@", dictionaryKey];
-            
             if (_traceExecution) {
                 NSLog(@"%@ = %@", parameterName, [dictionaryArgs objectForKey:dictionaryKey]);
             }
             
-            // Get the index for the parameter name.
+            // 获取参数名的索引
             int namedIdx = sqlite3_bind_parameter_index(pStmt, [parameterName UTF8String]);
             
             FMDBRelease(parameterName);
@@ -876,8 +857,7 @@ static int FMDBDatabaseBusyHandler(void *f, int count) {
                 [self bindObject:[dictionaryArgs objectForKey:dictionaryKey] toColumn:namedIdx inStatement:pStmt];
                 // increment the binding count, so our check below works out
                 idx++;
-            }
-            else {
+            }else {
                 NSLog(@"Could not find index for %@", dictionaryKey);
             }
         }
@@ -947,9 +927,7 @@ static int FMDBDatabaseBusyHandler(void *f, int count) {
 - (FMResultSet *)executeQuery:(NSString*)sql, ... {
     va_list args;
     va_start(args, sql);
-    //关键语句
     id result = [self executeQuery:sql withArgumentsInArray:nil orDictionary:nil orVAList:args];
-    
     va_end(args);
     return result;
 }
@@ -957,13 +935,10 @@ static int FMDBDatabaseBusyHandler(void *f, int count) {
 - (FMResultSet *)executeQueryWithFormat:(NSString*)format, ... {
     va_list args;
     va_start(args, format);
-    
     NSMutableString *sql = [NSMutableString stringWithCapacity:[format length]];
     NSMutableArray *arguments = [NSMutableArray array];
     [self extractSQL:format argumentsList:args intoString:sql arguments:arguments];
-    
     va_end(args);
-    
     return [self executeQuery:sql withArgumentsInArray:arguments];
 }
 
@@ -983,7 +958,7 @@ static int FMDBDatabaseBusyHandler(void *f, int count) {
     return [self executeQuery:sql withArgumentsInArray:nil orDictionary:nil orVAList:args];
 }
 
-#pragma mark Execute updates
+#pragma mark 执行更新
 
 - (BOOL)executeUpdate:(NSString*)sql error:(NSError * _Nullable __autoreleasing *)outErr withArgumentsInArray:(NSArray*)arrayArgs orDictionary:(NSDictionary *)dictionaryArgs orVAList:(va_list)args {
     if (![self databaseExists]) {//数据库是否存在
