@@ -1,7 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Workspace
    version = "1.0">
+   <Group
+      location = "group:sqlite-3310100"
+      name = "sqlite-3310100">
+      <FileRef
+         location = "group:shell.c">
+      </FileRef>
+      <FileRef
+         location = "group:sqlite3.c">
+      </FileRef>
+      <FileRef
+         location = "group:sqlite3.h">
+      </FileRef>
+      <FileRef
+         location = "group:sqlite3ext.h">
+      </FileRef>
+   </Group>
    <FileRef
-      location = "self:Persistence.xcodeproj">
+      location = "self:">
    </FileRef>
 </Workspace>
