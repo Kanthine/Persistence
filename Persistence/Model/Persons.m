@@ -19,16 +19,9 @@
 
 + (void)creatTableWithDatabase:(FMDatabase *)database{
     if (![database tableExists:@"Persons"]){
-        [database executeUpdate:@"CREATE TABLE Persons (id INTEGER PRIMARY KEY,name TEXT UNIQUE NOT NULL,age INTEGER CHECK (age>0),sex boolean DEFAULT YES,time DATETIME DEFAULT (datetime('now','localtime')),hobby TEXT DEFAULT '无')"];
+        [database executeUpdate:@"CREATE TABLE Persons (id INTEGER PRIMARY KEY AUTOINCREMENT,name TEXT UNIQUE NOT NULL,age INTEGER CHECK (age>0),sex boolean DEFAULT YES,time DATETIME DEFAULT (datetime('now','localtime')),hobby TEXT DEFAULT '无')"];
     }
 }
-
-+ (void)addTableWithDatabase:(FMDatabase *)database{
-    if ([database tableExists:@"Persons"]){
-        [database executeUpdate:@"ALTER TABLE Persons ADD birthday TEXT"];        
-    }
-}
-
 
 + (void)getDateWithName:(NSString *)name completionBlock:(void(^)(NSDate *date))block{
     [DatabaseManagement databaseChildThreadInTransaction:^(FMDatabase * _Nonnull database, BOOL * _Nonnull rollback) {
@@ -88,9 +81,7 @@
 
 + (void)insertModel:(Persons *)model{
     [DatabaseManagement databaseChildThreadInTransaction:^(FMDatabase *database, BOOL *rollback) {
-        [self creatTableWithDatabase:database];
-        [self addTableWithDatabase:database];
-        
+        [self creatTableWithDatabase:database];        
         BOOL result = [database executeUpdate:@"INSERT INTO Persons (name,age,sex) VALUES (? , ? , ?)" ,model.name,@(model.age),@(model.sex)];
         if (!result) {
             NSLog(@"error ===== %@",database.lastError);

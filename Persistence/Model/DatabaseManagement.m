@@ -120,6 +120,8 @@ NSString *groupSqliteFile(void){
 }
 
 
+
+
 /** 移除缓数据
  */
 + (void)clearSqlite{
@@ -130,6 +132,8 @@ NSString *groupSqliteFile(void){
     
     [DatabaseManagement databaseChildThreadInTransaction:^(FMDatabase *database, BOOL *rollback) {
         [database interrupt];//中断数据库操作
+        
+        [database executeUpdate:@"UPDATE sqlite_sequence SET seq = 0"];
         
         FMResultSet *resultSet = database.getSchema;
         while ([resultSet next]){

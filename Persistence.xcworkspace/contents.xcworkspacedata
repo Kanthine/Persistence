@@ -2,17 +2,13 @@
 <Workspace
    version = "1.0">
    <Group
-      location = "group:../../../../Desktop/sqlite-3310100"
+      location = "group:sqlite-3310100"
       name = "sqlite-3310100">
-   </Group>
-   <Group
-      location = "group:../sqlite-3310100"
-      name = "sqlite-3310100">
-      <FileRef
-         location = "group:sqlite3.c">
-      </FileRef>
       <FileRef
          location = "group:shell.c">
+      </FileRef>
+      <FileRef
+         location = "group:sqlite3.c">
       </FileRef>
       <FileRef
          location = "group:sqlite3.h">
@@ -22,6 +18,6 @@
       </FileRef>
    </Group>
    <FileRef
-      location = "self:">
+      location = "group:Persistence.xcodeproj">
    </FileRef>
 </Workspace>

@@ -30,26 +30,7 @@
     
 //    [DatabaseManagement info];
     
-    printf(" \n\n\n --------------- \n");
-    FMDatabaseQueue *queue1 = [[FMDatabaseQueue alloc] initWithPath:@""];
-    [queue1 inDatabase:^(FMDatabase * _Nonnull db) {
-        
-    }];
-    printf(" \n\n\n --------------- \n");
-    FMDatabaseQueue *queue2 = [[FMDatabaseQueue alloc] initWithPath:@""];
-    [queue2 inDatabase:^(FMDatabase * _Nonnull db) {
-        [queue1 inDatabase:^(FMDatabase * _Nonnull db) {
-            
-        }];
-    }];
-    
-    printf(" \n\n\n --------------- \n");
-    FMDatabaseQueue *queue3 = [[FMDatabaseQueue alloc] initWithPath:@""];
-    [queue3 inDatabase:^(FMDatabase * _Nonnull db) {
-        [queue3 inDatabase:^(FMDatabase * _Nonnull db) {
-            
-        }];
-    }];
+
 
 }
 
@@ -66,19 +47,19 @@
 - (IBAction)insertButtonClick:(UIButton *)sender {
     NSLog(@"%s",__func__);
     
-//    Persons *zhangsan = [[Persons alloc] init];
-//    zhangsan.name = @"zhangsan";
-//    zhangsan.sex = YES;
-//    zhangsan.age = 28;
-//
-//    Car *car = [[Car alloc] init];
-//    car.owners = zhangsan.name;
-//    car.brand = @"dazhong";
-//    car.price = 123456.789;
-//
-//    zhangsan.car = car;
-//    [Persons insertModel:zhangsan];
-//    [Car insertModel:car];
+    Persons *zhangsan = [[Persons alloc] init];
+    zhangsan.name = @"zhangsan";
+    zhangsan.sex = YES;
+    zhangsan.age = 28;
+
+    Car *car = [[Car alloc] init];
+    car.owners = zhangsan.name;
+    car.brand = @"dazhong";
+    car.price = 123456.789;
+
+    zhangsan.car = car;
+    [Persons insertModel:zhangsan];
+    [Car insertModel:car];
     
     [PhoneCodeModel insertModels:[PhoneCodeModel phoneCodeArray]];
     

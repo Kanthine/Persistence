@@ -14,7 +14,7 @@
 + (void)creatTable{
     [DatabaseManagement databaseCurrentThreadInTransaction:^(FMDatabase *database, BOOL *rollback) {
         if (![database tableExists:@"PhoneCodeModel"]){
-            [database executeUpdate:@"CREATE TABLE PhoneCodeModel (id INTEGER PRIMARY KEY,phoneCode TEXT UNIQUE NOT NULL,countryCode TEXT, countryPinYin TEXT, countryEnglish TEXT, countryChinese TEXT,time DATE DEFAULT CURRENT_TIMESTAMP)"];
+            [database executeUpdate:@"CREATE TABLE PhoneCodeModel (id INTEGER PRIMARY KEY AUTOINCREMENT,phoneCode TEXT UNIQUE NOT NULL,countryCode TEXT, countryPinYin TEXT, countryEnglish TEXT, countryChinese TEXT,time DATE DEFAULT CURRENT_TIMESTAMP)"];
         }
     }];
 }
