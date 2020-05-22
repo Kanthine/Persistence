@@ -56,14 +56,14 @@
     car.owners = zhangsan.name;
     car.brand = @"dazhong";
     car.price = 123456.789;
-
-    zhangsan.car = car;
+    
+//    zhangsan.car = car;
     [Persons insertModel:zhangsan];
-    [Car insertModel:car];
+//    [Car insertModel:car];
     
-    [PhoneCodeModel insertModels:[PhoneCodeModel phoneCodeArray]];
-    
-    [ProvincesModel replaceModels:[ProvincesModel provincesModelArray]];
+//    [PhoneCodeModel insertModels:[PhoneCodeModel phoneCodeArray]];
+//
+//    [ProvincesModel replaceModels:[ProvincesModel provincesModelArray]];
 //
 //    [PhoneCodeModel insertModel:self.phoneCodeModel];
 //

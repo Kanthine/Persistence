@@ -4500,7 +4500,7 @@ SQLITE_API const char *sqlite3_column_decltype(sqlite3_stmt*,int);
 SQLITE_API const void *sqlite3_column_decltype16(sqlite3_stmt*,int);
 
 /*
-** CAPI3REF: Evaluate An SQL Statement
+** CAPI3REF: 执行预处理语句 sqlite3_stmt
 ** METHOD: sqlite3_stmt
 **
 ** After a [prepared statement] has been prepared using any of
