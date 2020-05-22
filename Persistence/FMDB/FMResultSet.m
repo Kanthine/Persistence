@@ -135,7 +135,6 @@
         
         int columnIdx = 0;
         for (columnIdx = 0; columnIdx < columnCount; columnIdx++) {
-            
             NSString *columnName = [NSString stringWithUTF8String:sqlite3_column_name([_statement statement], columnIdx)];
             id objectValue = [self objectForColumnIndex:columnIdx];
             [dict setObject:objectValue forKey:columnName];
@@ -146,19 +145,17 @@
     else {
         NSLog(@"Warning: There seem to be no columns in this set.");
     }
-    
     return nil;
 }
-
-
-
 
 - (BOOL)next {
     return [self nextWithError:nil];
 }
 
 - (BOOL)nextWithError:(NSError * _Nullable __autoreleasing *)outErr {
-    
+    /** 用于执行有前面 sqlite3_prepare() 创建的 sqlite3_stmt 语句。
+     * 该函数执行到结果的第一行可用的位置,继续前进到结果的第二行的话，只需再次调用 sqlite3_setp()
+     */
     int rc = sqlite3_step([_statement statement]);
     
     if (SQLITE_BUSY == rc || SQLITE_LOCKED == rc) {
@@ -167,17 +164,14 @@
         if (outErr) {
             *outErr = [_parentDB lastError];
         }
-    }
-    else if (SQLITE_DONE == rc || SQLITE_ROW == rc) {
+    }else if (SQLITE_DONE == rc || SQLITE_ROW == rc) {
         // all is well, let's return.
-    }
-    else if (SQLITE_ERROR == rc) {
+    }else if (SQLITE_ERROR == rc) {
         NSLog(@"Error calling sqlite3_step (%d: %s) rs", rc, sqlite3_errmsg([_parentDB sqliteHandle]));
         if (outErr) {
             *outErr = [_parentDB lastError];
         }
-    }
-    else if (SQLITE_MISUSE == rc) {
+    }else if (SQLITE_MISUSE == rc) {
         // uh oh.
         NSLog(@"Error calling sqlite3_step (%d: %s) rs", rc, sqlite3_errmsg([_parentDB sqliteHandle]));
         if (outErr) {
@@ -192,8 +186,7 @@
             }
             
         }
-    }
-    else {
+    }else {
         // wtf?
         NSLog(@"Unknown error calling sqlite3_step (%d: %s) rs", rc, sqlite3_errmsg([_parentDB sqliteHandle]));
         if (outErr) {

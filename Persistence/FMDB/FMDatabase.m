@@ -168,7 +168,7 @@ int sqlite3_open(const char *filename,sqlite3 **ppDb);
         return NO;
     }
     
-    //当执行这段代码的时候，数据库正在被其他线程访问，就需要给他设置重试时间，
+    //当执行这段代码的时候，数据库正在被其他线程访问，那我们就需要给他设置一个重试时间，默认为2秒。
     if (_maxBusyRetryTimeInterval > 0.0) {
         [self setMaxBusyRetryTimeInterval:_maxBusyRetryTimeInterval];
     }
@@ -588,15 +588,14 @@ static int FMDBDatabaseBusyHandler(void *f, int count) {
 
 #pragma mark SQL manipulation
 
-/** 将变量插入到字段中
- 
- int sqlite3_bind_text(sqlite3_stmt*,int,const char*,int,void(*)(void*));
- 
- 参数绑定：
- 和大多数关系型数据库一样，SQLite的Sql 语句也支持变量绑定，以便减少SQL语句被动态解析的次数，从而提高数据查询和数据操作的效率。
- 要完成该操作，需要使用SQLite提供的另外两个接口sqlite3_reset() 和 sqlite3_bind()
+/** 将值 obj 绑定预处理语句 sqlite3_stmt
+ * @param obj 待绑定的值
+ * @param idx 表中所在列数的索引，需要将 obj 绑定到第几列
+ * @parma pStmt 预处理语句，需要将 obj 绑定到该结构上
+ *
+ * @note SQLite的 Sql 语句通过绑定变量，减少SQL语句被动态解析的次数，从而提高数据查询和数据操作的效率。
+ *       要完成该操作，需要使用SQLite提供的 sqlite3_reset() 和 sqlite3_bind_*() 函数
  */
-
 - (void)bindObject:(id)obj toColumn:(int)idx inStatement:(sqlite3_stmt*)pStmt {
     
     if ((!obj) || ((NSNull *)obj == [NSNull null])) {//obj 为 nil
@@ -649,6 +648,10 @@ static int FMDBDatabaseBusyHandler(void *f, int count) {
     }
 }
 
+/**  -executeQueryWithFormat: 和 -executeUpdateWithFormat: 方法 需要将对应字符串处理成相应的 SQL 语句：
+ * 针对 [db executeUpdateWithFormat:@"INSERT INTO test (name) VALUES (%@)", @"Gus"];
+ * 该方法主要将 -executeUpdateWithFormat: 中的 %s 、%d 、 %@ 等转义序列变为占位符 ? ，然后将 "Gus" 加入到arguments中
+ */
 - (void)extractSQL:(NSString *)sql argumentsList:(va_list)args intoString:(NSMutableString *)cleanedSQL arguments:(NSMutableArray *)arguments {
     
     NSUInteger length = [sql length];
@@ -751,18 +754,21 @@ static int FMDBDatabaseBusyHandler(void *f, int count) {
             }
         }
         else if (current == '%') {
-            // percent sign; skip this character
+            // 遇到%，直接跳过
             add = '\0';
         }
         
         if (arg != nil) {
+            // 如果arg不为空，表示确定arg是参数，那么就使用 ？替换它，并将其对应参数值arg添加到arguments
             [cleanedSQL appendString:@"?"];
             [arguments addObject:arg];
         }
         else if (add == (unichar)'@' && last == (unichar) '%') {
+            // 如果参数格式是 %@，但此时arg是空，那么就替换为NULL
             [cleanedSQL appendFormat:@"NULL"];
         }
         else if (add != '\0') {
+            // 如果不是参数，就用原先字符串替换
             [cleanedSQL appendFormat:@"%C", add];
         }
         last = current;
@@ -775,7 +781,6 @@ static int FMDBDatabaseBusyHandler(void *f, int count) {
     return [self executeQuery:sql withArgumentsInArray:nil orDictionary:arguments orVAList:nil];
 }
 
-// https://www.cnblogs.com/guohai-stronger/p/9246653.html
 /**
  * @param sql 代表我们要查询的sql语句
  * @param arrayArgs 代表数组类型的参数
@@ -833,47 +838,34 @@ static int FMDBDatabaseBusyHandler(void *f, int count) {
     
     id obj;
     int idx = 0;
-    int queryCount = sqlite3_bind_parameter_count(pStmt);
-    
-    // If dictionaryArgs is passed in, that means we are using sqlite's named parameter support
-    //对dictionaryArgs参数的处理，类似于下面":age"参数形式
+    int queryCount = sqlite3_bind_parameter_count(pStmt);//
+    /********** 将变量绑定到 sqlite3_stmt 上 ********/
     if (dictionaryArgs) {
-        
         for (NSString *dictionaryKey in [dictionaryArgs allKeys]) {
-            
-            // 在键前面加上冒号
             NSString *parameterName = [[NSString alloc] initWithFormat:@":%@", dictionaryKey];
             if (_traceExecution) {
                 NSLog(@"%@ = %@", parameterName, [dictionaryArgs objectForKey:dictionaryKey]);
             }
-            
-            // 获取参数名的索引
+            // 获取参数名的索引： 第几列
             int namedIdx = sqlite3_bind_parameter_index(pStmt, [parameterName UTF8String]);
-            
             FMDBRelease(parameterName);
-            
+            // 将指定的 value 绑定到 sqlite3_stmt 上 指定的列数
             if (namedIdx > 0) {
-                // Standard binding from here.
                 [self bindObject:[dictionaryArgs objectForKey:dictionaryKey] toColumn:namedIdx inStatement:pStmt];
-                // increment the binding count, so our check below works out
                 idx++;
             }else {
                 NSLog(@"Could not find index for %@", dictionaryKey);
             }
         }
     } else {//对于arrayArgs参数和不定参数的处理，类似于"?"参数形式
-        
         while (idx < queryCount) {
-            
             if (arrayArgs && idx < (int)[arrayArgs count]) {
                 obj = [arrayArgs objectAtIndex:(NSUInteger)idx];
             }else if (args) {//不定参数形式
                 obj = va_arg(args, id);
             }else {
-                //We ran out of arguments
                 break;
             }
-            
             if (_traceExecution) {
                 if ([obj isKindOfClass:[NSData class]]) {
                     NSLog(@"data: %ld bytes", (unsigned long)[(NSData*)obj length]);
@@ -882,26 +874,22 @@ static int FMDBDatabaseBusyHandler(void *f, int count) {
                     NSLog(@"obj: %@", obj);
                 }
             }
-            
             idx++;
-            
             [self bindObject:obj toColumn:idx inStatement:pStmt];
         }
     }
-    
     if (idx != queryCount) {//如果绑定的参数数目不对，则进行出错处理
         NSLog(@"Error: the bind count is not correct for the # of variables (executeQuery)");
         sqlite3_finalize(pStmt);
         _isExecutingStatement = NO;
         return nil;
     }
+    FMDBRetain(statement);
     
-    FMDBRetain(statement); // to balance the release below
-    
-    if (!statement) {//生成FMStatement对象
+    /********** 没有缓存则创建 FMStatement 对象  ********/
+    if (!statement) {
         statement = [[FMStatement alloc] init];
         [statement setStatement:pStmt];
-        
         //缓存的处理，key为sql语句，值为statement
         if (_shouldCacheStatements && sql) {
             [self setCachedStatement:statement forQuery:sql];
@@ -972,19 +960,21 @@ static int FMDBDatabaseBusyHandler(void *f, int count) {
     _isExecutingStatement = YES;
     
     int rc                   = 0x00;
-    sqlite3_stmt *pStmt      = 0x00;
+    sqlite3_stmt *pStmt      = 0x00;//预处理语句
     FMStatement *cachedStmt  = 0x00;
     
     if (_traceExecution && sql) {
         NSLog(@"%@ executeUpdate: %@", self, sql);
     }
     
+    /********** 获取缓存数据 ********/
     if (_shouldCacheStatements) {
         cachedStmt = [self cachedStatementForQuery:sql];
         pStmt = cachedStmt ? [cachedStmt statement] : 0x00;
         [cachedStmt reset];
     }
     
+    /********** 没有缓存则调用 sqlite3_prepare_v2() 创建 sqlite3_stmt ********/
     if (!pStmt) {
         rc = sqlite3_prepare_v2(_db, [sql UTF8String], -1, &pStmt, 0);
         
@@ -1015,7 +1005,7 @@ static int FMDBDatabaseBusyHandler(void *f, int count) {
     int idx = 0;
     int queryCount = sqlite3_bind_parameter_count(pStmt);
     
-    // If dictionaryArgs is passed in, that means we are using sqlite's named parameter support
+    /********** 将变量绑定到 sqlite3_stmt 上 ********/
     if (dictionaryArgs) {
         
         for (NSString *dictionaryKey in [dictionaryArgs allKeys]) {
@@ -1078,8 +1068,6 @@ static int FMDBDatabaseBusyHandler(void *f, int count) {
             [self bindObject:obj toColumn:idx inStatement:pStmt];
         }
     }
-    
-    
     if (idx != queryCount) {
         NSString *message = [NSString stringWithFormat:@"Error: the bind count (%d) is not correct for the # of variables in the query (%d) (%@) (executeUpdate)", idx, queryCount, sql];
         if (_logsErrors) {
@@ -1094,22 +1082,19 @@ static int FMDBDatabaseBusyHandler(void *f, int count) {
         return NO;
     }
     
-    /* Call sqlite3_step() to run the virtual machine. Since the SQL being
-     ** executed is not a SELECT statement, we assume no data will be returned.
+    /** 用于执行有前面 sqlite3_prepare() 创建的 sqlite3_stmt 语句。
+     * 该函数执行到结果的第一行可用的位置,继续前进到结果的第二行的话，只需再次调用sqlite3_setp()。
+     * 由于执行的SQL不是 SELECT 语句，假设不会返回任何数据，此处 sqlite3_setp() 只调用一次。
      */
-    
-    rc      = sqlite3_step(pStmt);
-    
+    rc = sqlite3_step(pStmt);//执行预处理语句
     if (SQLITE_DONE == rc) {
         // all is well, let's return.
-    }
-    else if (SQLITE_INTERRUPT == rc) {
+    }else if (SQLITE_INTERRUPT == rc) {
         if (_logsErrors) {
             NSLog(@"Error calling sqlite3_step. Query was interrupted (%d: %s) SQLITE_INTERRUPT", rc, sqlite3_errmsg(_db));
             NSLog(@"DB Query: %@", sql);
         }
-    }
-    else if (rc == SQLITE_ROW) {
+    }else if (rc == SQLITE_ROW) {
         NSString *message = [NSString stringWithFormat:@"A executeUpdate is being called with a query string '%@'", sql];
         if (_logsErrors) {
             NSLog(@"%@", message);
@@ -1118,8 +1103,7 @@ static int FMDBDatabaseBusyHandler(void *f, int count) {
         if (outErr) {
             *outErr = [self errorWithMessage:message];
         }
-    }
-    else {
+    }else {
         if (outErr) {
             *outErr = [self errorWithMessage:[NSString stringWithUTF8String:sqlite3_errmsg(_db)]];
         }
@@ -1129,15 +1113,13 @@ static int FMDBDatabaseBusyHandler(void *f, int count) {
                 NSLog(@"Error calling sqlite3_step (%d: %s) SQLITE_ERROR", rc, sqlite3_errmsg(_db));
                 NSLog(@"DB Query: %@", sql);
             }
-        }
-        else if (SQLITE_MISUSE == rc) {
+        }else if (SQLITE_MISUSE == rc) {
             // uh oh.
             if (_logsErrors) {
                 NSLog(@"Error calling sqlite3_step (%d: %s) SQLITE_MISUSE", rc, sqlite3_errmsg(_db));
                 NSLog(@"DB Query: %@", sql);
             }
-        }
-        else {
+        }else {
             // wtf?
             if (_logsErrors) {
                 NSLog(@"Unknown error calling sqlite3_step (%d: %s) eu", rc, sqlite3_errmsg(_db));
@@ -1146,13 +1128,11 @@ static int FMDBDatabaseBusyHandler(void *f, int count) {
         }
     }
     
+    /********** 没有缓存则创建 FMStatement 对象  ********/
     if (_shouldCacheStatements && !cachedStmt) {
         cachedStmt = [[FMStatement alloc] init];
-        
         [cachedStmt setStatement:pStmt];
-        
         [self setCachedStatement:cachedStmt forQuery:sql];
-        
         FMDBRelease(cachedStmt);
     }
     
@@ -1160,7 +1140,7 @@ static int FMDBDatabaseBusyHandler(void *f, int count) {
     
     if (cachedStmt) {
         [cachedStmt setUseCount:[cachedStmt useCount] + 1];
-        closeErrorCode = sqlite3_reset(pStmt);
+        closeErrorCode = sqlite3_reset(pStmt);//重置一个pStmt语句对象到它的初始状态，然后准备被重新执行。
     }
     else {
         /* Finalize the virtual machine. This releases all memory and other

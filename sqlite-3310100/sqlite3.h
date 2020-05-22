@@ -3259,7 +3259,7 @@ SQLITE_API int sqlite3_trace_v2(
 SQLITE_API void sqlite3_progress_handler(sqlite3*, int, int(*)(void*), void*);
 
 /*
-** CAPI3REF: Opening A New Database Connection
+** CAPI3REF: 打开一个新的数据库连接
 ** CONSTRUCTOR: sqlite3
 **
 ** ^These routines open an SQLite database file as specified by the 
@@ -4165,18 +4165,17 @@ typedef struct sqlite3_value sqlite3_value;
 typedef struct sqlite3_context sqlite3_context;
 
 /*
-** CAPI3REF: Binding Values To Prepared Statements
+** CAPI3REF: 将值绑定预处理语句 sqlite3_stmt
 ** KEYWORDS: {host parameter} {host parameters} {host parameter name}
 ** KEYWORDS: {SQL parameter} {SQL parameters} {parameter binding}
 ** METHOD: sqlite3_stmt
 **
 ** ^(In the SQL statement text input to [sqlite3_prepare_v2()] and its variants,
-** literals may be replaced by a [parameter] that matches one of following
-** templates:
+** literals may be replaced by a [parameter] that matches one of following templates:
 **
 ** <ul>
 ** <li>  ?
-** <li>  ?NNN
+** <li>  ?NNN  //integer 字面量
 ** <li>  :VVV
 ** <li>  @VVV
 ** <li>  $VVV
@@ -4187,11 +4186,8 @@ typedef struct sqlite3_context sqlite3_context;
 ** parameters (also called "host parameter names" or "SQL parameters")
 ** can be set using the sqlite3_bind_*() routines defined here.
 **
-** ^The first argument to the sqlite3_bind_*() routines is always
-** a pointer to the [sqlite3_stmt] object returned from
-** [sqlite3_prepare_v2()] or its variants.
-**
-** ^The second argument is the index of the SQL parameter to be set.
+** sqlite3_bind_*() 函数的第一个参数总是一个指向 sqlite3_stmt 结构的指针，该结构从 sqlite3_prepare_*() 函数获取
+**                  第二个参数是要设置的表的列数。
 ** ^The leftmost SQL parameter has an index of 1.  ^When the same named
 ** SQL parameter is used more than once, second and subsequent
 ** occurrences have the same index as the first occurrence.
@@ -4299,7 +4295,7 @@ SQLITE_API int sqlite3_bind_zeroblob(sqlite3_stmt*, int, int n);
 SQLITE_API int sqlite3_bind_zeroblob64(sqlite3_stmt*, int, sqlite3_uint64);
 
 /*
-** CAPI3REF: Number Of SQL Parameters
+** CAPI3REF: SQL 的参数个数
 ** METHOD: sqlite3_stmt
 **
 ** ^This routine can be used to find the number of [SQL parameters]
