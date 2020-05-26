@@ -2,8 +2,8 @@
 <Workspace
    version = "1.0">
    <Group
-      location = "group:sqlite-3310100"
-      name = "sqlite-3310100">
+      location = "group:sqlite-3320100"
+      name = "sqlite-3320100">
       <FileRef
          location = "group:shell.c">
       </FileRef>

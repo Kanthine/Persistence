@@ -148,16 +148,18 @@
     return nil;
 }
 
+/** FMDatabase 的 -executeQuery 系列方法本质上仅仅封装了预处理语句 sqlite3_stmt，但是并没有执行该语句！
+ * 要获取查询的数据，需要调用 `sqlite3_setp()` 函数执行 `sqlite3_stmt` ！
+ * FMDB 将执行语句封装在了 `FMResultSet` 的 `-next` 方法中：
+ * 该函数执行到 Sqlite 结果集的第一行可用的位置,继续前进到结果的第二行的话，只需再次调用 sqlite3_setp()：
+ * 由于这些 C 语言变量的内存不被 ARC系统所管理，因此使用 `FMResultSet` 实例完毕后，需要关闭结果集 `[FMResultSet close]` ！
+ */
 - (BOOL)next {
     return [self nextWithError:nil];
 }
 
 - (BOOL)nextWithError:(NSError * _Nullable __autoreleasing *)outErr {
-    /** 用于执行有前面 sqlite3_prepare() 创建的 sqlite3_stmt 语句。
-     * 该函数执行到结果的第一行可用的位置,继续前进到结果的第二行的话，只需再次调用 sqlite3_setp()
-     */
-    int rc = sqlite3_step([_statement statement]);
-    
+    int rc = sqlite3_step([_statement statement]);//执行查询
     if (SQLITE_BUSY == rc || SQLITE_LOCKED == rc) {
         NSLog(@"%s:%d Database busy (%@)", __FUNCTION__, __LINE__, [_parentDB databasePath]);
         NSLog(@"Database busy");
@@ -184,7 +186,6 @@
                 NSDictionary* errorMessage = [NSDictionary dictionaryWithObject:@"parentDB does not exist" forKey:NSLocalizedDescriptionKey];
                 *outErr = [NSError errorWithDomain:@"FMDatabase" code:SQLITE_MISUSE userInfo:errorMessage];
             }
-            
         }
     }else {
         // wtf?

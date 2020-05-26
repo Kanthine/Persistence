@@ -780,17 +780,15 @@ static int FMDBDatabaseBusyHandler(void *f, int count) {
     return [self executeQuery:sql withArgumentsInArray:nil orDictionary:arguments orVAList:nil];
 }
 
-/**
- * @param sql 代表我们要查询的sql语句
- * @param arrayArgs 代表数组类型的参数
- *  如：FMResultSet *resultSet = [_db executeQuery:@"SELECT * FROM t_student WHERE age > ?" withArgumentsInArray:@[@25]];
- * @param dictionaryArgs 代表字典类型的参数
- *  如：FMResultSet *resultSet = [_db executeQuery:@"SELECT * FROM t_student WHERE age > :age" withParameterDictionary:@{@"age":@25}];
- * @param args 代表可变类型的参数
- *  如：FMResultSet *resultSet = [_db executeQuery:@"SELECT * FROM t_student WHERE age > ?",@(20)];
+/** 该方法主要做了几件事：
+ * 1、判断环境：数据库是否存在、或者是否正在执行 Sql 语句；
+ * 2、如果有缓存，则获取缓存，并重置预处理语句 sqlite3_stmt；
+ * 3、如果没有缓存，则调用 sqlite3_prepare_v2() 函数创建 sqlite3_stmt；
+ * 4、将 Sql 语句中占位符 ？ 所对应的变量值通过  sqlite3_bind_*() 函数绑定到结构 sqlite3_stmt 上；
+ * 5、如果 FMStatement 实例为空，则创建 FMStatement 实例，并根据需要缓存该实例；
+ * 6、 根据 FMStatement 实例创建一个 FMResultSet ，并将FMResultSet 实例存储在数组 _openResultSets 中；
  */
 - (FMResultSet *)executeQuery:(NSString *)sql withArgumentsInArray:(NSArray*)arrayArgs orDictionary:(NSDictionary *)dictionaryArgs orVAList:(va_list)args {
-    
     /********** 判断环境 ********/
     if (![self databaseExists]) {//判断数据库是否存在
         return 0x00;
@@ -836,10 +834,10 @@ static int FMDBDatabaseBusyHandler(void *f, int count) {
         }
     }
     
+    /********** 将变量绑定到 sqlite3_stmt 上 ********/
     id obj;
     int idx = 0;
-    int queryCount = sqlite3_bind_parameter_count(pStmt);//
-    /********** 将变量绑定到 sqlite3_stmt 上 ********/
+    int queryCount = sqlite3_bind_parameter_count(pStmt);
     if (dictionaryArgs) {
         for (NSString *dictionaryKey in [dictionaryArgs allKeys]) {
             NSString *parameterName = [[NSString alloc] initWithFormat:@":%@", dictionaryKey];
@@ -852,7 +850,7 @@ static int FMDBDatabaseBusyHandler(void *f, int count) {
             if (namedIdx > 0) {
                 // 将指定的 value 绑定到 sqlite3_stmt 上 指定的列数
                 [self bindObject:[dictionaryArgs objectForKey:dictionaryKey] toColumn:namedIdx inStatement:pStmt];
-                idx++;//计量
+                idx++;//计量绑定的参数
             }else {
                 NSLog(@"Could not find index for %@", dictionaryKey);
             }
@@ -887,17 +885,17 @@ static int FMDBDatabaseBusyHandler(void *f, int count) {
     }
     FMDBRetain(statement);
     
-    /********** 没有缓存则创建 FMStatement 对象  ********/
+    /********** 没有 FMStatement 则创建 FMStatement 对象  ********/
     if (!statement) {
         statement = [[FMStatement alloc] init];
         [statement setStatement:pStmt];
-        //缓存的处理，key为sql语句，值为statement
         if (_shouldCacheStatements && sql) {
+            //缓存的处理，key为sql语句，值为statement
             [self setCachedStatement:statement forQuery:sql];
         }
     }
     
-    // the statement gets closed in rs's dealloc or [rs close];
+    /*************** 根据 FMStatement 实例创建一个 FMResultSet *************/
     rs = [FMResultSet resultSetWithStatement:statement usingParentDatabase:self];
     [rs setQuery:sql];
     
@@ -1002,11 +1000,10 @@ static int FMDBDatabaseBusyHandler(void *f, int count) {
         }
     }
     
+    /********** 将变量绑定到 sqlite3_stmt 上 ********/
     id obj;
     int idx = 0;
     int queryCount = sqlite3_bind_parameter_count(pStmt);
-    
-    /********** 将变量绑定到 sqlite3_stmt 上 ********/
     if (dictionaryArgs) {
         for (NSString *dictionaryKey in [dictionaryArgs allKeys]) {
             NSString *parameterName = [[NSString alloc] initWithFormat:@":%@", dictionaryKey];
