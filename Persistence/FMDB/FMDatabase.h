@@ -91,7 +91,9 @@ typedef NS_ENUM(int, FMDBCheckpointMode) {
  */
 @property (atomic, assign) BOOL logsErrors;
 
-/** Dictionary of cached statements
+
+/** 缓存 FMStatement
+ * 针对大量重复的 Sql 语句，通过缓存，可以提升程序的性能
  */
 @property (atomic, retain, nullable) NSMutableDictionary *cachedStatements;
 
@@ -697,14 +699,7 @@ typedef NS_ENUM(int, SqliteValueType) {
 @end
 
 
-/** FMDB使用Cached Statement功能
- *
- * 在SQLite中，所有的SQL语句都会被编译，形成预处理语句Prepared Statements，然后被执行。
- * SQLite使用结构sqlite3_stmt 来保存Prepared Statements，并提供一系列的方法。
- *
- * 在FMDB中，类FMStatement封装了sqlite3_stmt 供其他类进行调用；Cached Statement功能可以提高SQLite数据库访问。
- * 在开发中，如果执行的SQL语句大量重复，使用该功能可以提升App性能。
- * 但如果不重复，则可以考虑关闭该功能，以节省资源。在FMDB中，开发者可以使用setShouldCacheStatements方法开启或关闭该功能，并使用shouldCacheStatements方法判断状态。当使用完，可以使用clearCachedStatements方法清空缓存。
+/**
  */
 @interface FMStatement : NSObject {
     void *_statement;
@@ -713,23 +708,25 @@ typedef NS_ENUM(int, SqliteValueType) {
     BOOL _inUse;
 }
 
-/** 使用计数 */
+/** 从缓存中取出 sqlite3_stmt ，并重复使用的次数 */
 @property (atomic, assign) long useCount;
 
-/** SQL语句 */
+/** 需要执行的 SQL 语句 */
 @property (atomic, retain) NSString *query;
 
-/** SQLite [sqlite3_stmt](http://www.sqlite.org/c3ref/stmt.html)
- */
+/** 预处理语句 sqlite3_stmt ：将 Sql 通过 sqlite3_prepare_v2() 函数构建而来 */
 @property (atomic, assign) void *statement;
 
-/** 是否正在使用 */
+/** 是否正在使用该条语句 */
 @property (atomic, assign) BOOL inUse;
 
-/** 关闭 */
+/** 释放 sqlite3_stmt 内存
+ * sqlite3_stmt 作为 C 变量，需要调用 sqlite3_finalize() 函数释放它；
+ */
 - (void)close;
 
-/** 重置  */
+/** 重置
+ */
 - (void)reset;
 
 @end

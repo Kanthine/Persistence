@@ -349,8 +349,8 @@ static int FMDBDatabaseBusyHandler(void *f, int count) {
     }
 }
 
-/** FMResultSet 关闭时，需要FMDatabase从 _openResultSets 移除该结果集
- */
+
+/** FMResultSet 关闭时，需要FMDatabase从 _openResultSets 移除该结果集 */
 - (void)resultSetDidClose:(FMResultSet *)resultSet {
     NSValue *setValue = [NSValue valueWithNonretainedObject:resultSet];
     [_openResultSets removeObject:setValue];
@@ -360,11 +360,14 @@ static int FMDBDatabaseBusyHandler(void *f, int count) {
 
 /** 清除缓存语句 */
 - (void)clearCachedStatements {
+    /** 1、首先遍历字典，将 FMStatement 持有的 sqlite3_stmt 全部释放 */
     for (NSMutableSet *statements in [_cachedStatements objectEnumerator]) {
         for (FMStatement *statement in [statements allObjects]) {
-            [statement close];
+            [statement close];//释放 sqlite3_stmt
         }
     }
+    
+    /** 2、其次将字典中的元素全部移除 */
     [_cachedStatements removeAllObjects];
 }
 
@@ -384,10 +387,8 @@ static int FMDBDatabaseBusyHandler(void *f, int count) {
         NSLog(@"API misuse, -[FMDatabase setCachedStatement:forQuery:] query must not be nil");
         return;
     }
-    
     query = [query copy];
     [statement setQuery:query];
-    
     NSMutableSet* statements = [_cachedStatements objectForKey:query];
     if (!statements) {
         statements = [NSMutableSet set];
@@ -801,7 +802,7 @@ static int FMDBDatabaseBusyHandler(void *f, int count) {
     
     int rc                  = 0x00;
     sqlite3_stmt *pStmt     = 0x00;//预处理语句
-    FMStatement *statement  = 0x00;
+    FMStatement *statement  = 0x00;//缓存语句
     FMResultSet *rs         = 0x00;//结果集
     
     if (_traceExecution && sql) {//打印sql语句
@@ -964,7 +965,7 @@ static int FMDBDatabaseBusyHandler(void *f, int count) {
     
     int rc                   = 0x00;
     sqlite3_stmt *pStmt      = 0x00;//预处理语句
-    FMStatement *cachedStmt  = 0x00;
+    FMStatement *cachedStmt  = 0x00;//缓存语句
     
     if (_traceExecution && sql) {
         NSLog(@"%@ executeUpdate: %@", self, sql);
@@ -972,14 +973,14 @@ static int FMDBDatabaseBusyHandler(void *f, int count) {
     
     /********** 获取缓存数据 ********/
     if (_shouldCacheStatements) {
-        cachedStmt = [self cachedStatementForQuery:sql];
-        pStmt = cachedStmt ? [cachedStmt statement] : 0x00;
+        cachedStmt = [self cachedStatementForQuery:sql];//取出缓存的 FMStatement
+        pStmt = cachedStmt ? [cachedStmt statement] : 0x00;//获取预处理语句 sqlite3_stmt
         [cachedStmt reset];//重置 sqlite3_stmt
     }
     
     /********** 没有缓存则调用 sqlite3_prepare_v2() 创建 sqlite3_stmt ********/
     if (!pStmt) {
-        //对sql语句进行预处理，创建 sqlite3_stmt
+        //对sql语句进行编译，创建 sqlite3_stmt
         rc = sqlite3_prepare_v2(_db, [sql UTF8String], -1, &pStmt, 0);
         if (SQLITE_OK != rc) {
             if (_logsErrors) {
@@ -994,7 +995,7 @@ static int FMDBDatabaseBusyHandler(void *f, int count) {
             if (outErr) {
                 *outErr = [self errorWithMessage:[NSString stringWithUTF8String:sqlite3_errmsg(_db)]];
             }
-            sqlite3_finalize(pStmt);
+            sqlite3_finalize(pStmt);//失败则释放 sqlite3_stmt
             _isExecutingStatement = NO;
             return NO;
         }
@@ -1140,7 +1141,6 @@ static int FMDBDatabaseBusyHandler(void *f, int count) {
     return (rc == SQLITE_DONE || rc == SQLITE_OK);
 }
 
-
 - (BOOL)executeUpdate:(NSString*)sql, ... {
     va_list args;
     va_start(args, sql);
@@ -1246,43 +1246,11 @@ int FMDBExecuteBulkSQLCallback(void *theBlockAsVoid, int columns, char **values,
 
 #pragma mark 事务
 
-/**
-SQLite目前不允许嵌套事务。
-
-可以使用BEGIN命令手动启动事务。这样启动的事务会在下一条COMMIT或ROLLBACK命令之前一直有效。但若数据库关闭 或出现错误且选用ROLLBACK冲突判定算法时，数据库也会ROLLBACK。
-
-
-在SQLite 3.0.8 或更高版本中，事务可以是延迟的，即时的或者独占的。
-“延迟的”即是说在数据库第一次被访问之前不获得锁。 这样就会延迟事务，BEGIN语句本身不做任何事情。
-直到初次读取或访问数据库时才获取锁。对数据库的初次读取创建一个SHARED锁 ，初次写入创建一个RESERVED锁。
-由于锁的获取被延迟到第一次需要时，别的线程或进程可以在当前线程执行BEGIN语句之后创建另外的事务 写入数据库。
-
-若事务是即时的，则执行BEGIN命令后立即获取RESERVED锁，而不等数据库被使用。在执行BEGIN IMMEDIATE之后， 你可以确保其它的线程或进程不能写入数据库或执行BEGIN IMMEDIATE或BEGIN EXCLUSIVE. 但其它进程可以读取数据库。
-
-独占事务在所有的数据库获取EXCLUSIVE锁，在执行BEGIN EXCLUSIVE之后，你可以确保在当前事务结束前没有任何其它线程或进程 能够读写数据库。
-
- 
-BEGIN 或 START TRANSACTION 显式地开启一个事务；
-
-COMMIT 也可以使用 COMMIT WORK，不过二者是等价的。COMMIT 会提交事务，并使已对数据库进行的所有修改成为永久性的；
-
-ROLLBACK 也可以使用 ROLLBACK WORK，不过二者是等价的。回滚会结束用户的事务，并撤销正在进行的所有未提交的修改；
-
-SAVEPOINT identifier，SAVEPOINT 允许在事务中创建一个保存点，一个事务中可以有多个 SAVEPOINT；
-
-RELEASE SAVEPOINT identifier 删除一个事务的保存点，当没有指定的保存点时，执行该语句会抛出一个异常；
-
-ROLLBACK TO identifier 把事务回滚到标记点；
-
-SET TRANSACTION 用来设置事务的隔离级别。InnoDB 存储引擎提供事务的隔离级别有READ UNCOMMITTED、READ COMMITTED、REPEATABLE READ 和 SERIALIZABLE。]
- 
- */
-
 //事务回滚
 - (BOOL)rollback {
     BOOL b = [self executeUpdate:@"rollback transaction"];
     if (b) {
-        _isInTransaction = NO;
+        _isInTransaction = NO;//标记事务结束
     }
     return b;
 }
@@ -1291,7 +1259,7 @@ SET TRANSACTION 用来设置事务的隔离级别。InnoDB 存储引擎提供事
 - (BOOL)commit {
     BOOL b =  [self executeUpdate:@"commit transaction"];
     if (b) {
-        _isInTransaction = NO;
+        _isInTransaction = NO;//标记事务结束
     }
     return b;
 }
@@ -1299,13 +1267,12 @@ SET TRANSACTION 用来设置事务的隔离级别。InnoDB 存储引擎提供事
 - (BOOL)beginTransaction {//默认开始互斥事务
     BOOL b = [self executeUpdate:@"begin exclusive transaction"];
     if (b) {
-        _isInTransaction = YES;
+        _isInTransaction = YES;//标记处于事务中
     }
     return b;
 }
 
-//开始一个延迟的事务
-- (BOOL)beginDeferredTransaction {
+- (BOOL)beginDeferredTransaction {//开始一个延迟的事务
     BOOL b = [self executeUpdate:@"begin deferred transaction"];
     if (b) {
         _isInTransaction = YES;
@@ -1313,8 +1280,7 @@ SET TRANSACTION 用来设置事务的隔离级别。InnoDB 存储引擎提供事
     return b;
 }
 
-//立即开启事务
-- (BOOL)beginImmediateTransaction {
+- (BOOL)beginImmediateTransaction {//开启即时事务
     BOOL b = [self executeUpdate:@"begin immediate transaction"];
     if (b) {
         _isInTransaction = YES;
@@ -1322,8 +1288,7 @@ SET TRANSACTION 用来设置事务的隔离级别。InnoDB 存储引擎提供事
     return b;
 }
 
-//开始互斥事务
-- (BOOL)beginExclusiveTransaction {
+- (BOOL)beginExclusiveTransaction {//开始互斥事务
     BOOL b = [self executeUpdate:@"begin exclusive transaction"];
     if (b) {
         _isInTransaction = YES;
@@ -1344,6 +1309,7 @@ SET TRANSACTION 用来设置事务的隔离级别。InnoDB 存储引擎提供事
     return NO;
 }
 
+//处理 SavePoint 名字中的特殊字符
 static NSString *FMDBEscapeSavePointName(NSString *savepointName) {
     return [savepointName stringByReplacingOccurrencesOfString:@"'" withString:@"''"];
 }
@@ -1393,6 +1359,10 @@ static NSString *FMDBEscapeSavePointName(NSString *savepointName) {
 #endif
 }
 
+/** 执行保存点后的代码
+ * @param block 要在保存点内执行的代码块
+ * @return 错误对应的NSError；如果没有错误返回nil
+*/
 - (NSError*)inSavePoint:(__attribute__((noescape)) void (^)(BOOL *rollback))block {
 #if SQLITE_VERSION_NUMBER >= 3007000
     static unsigned long savePointIdx = 0;
@@ -1463,6 +1433,9 @@ static NSString *FMDBEscapeSavePointName(NSString *savepointName) {
     return _shouldCacheStatements;
 }
 
+/** shouldCacheStatements 的 -set 方法
+ * 根据情况为字典 cachedStatements 赋值
+ */
 - (void)setShouldCacheStatements:(BOOL)value {
     _shouldCacheStatements = value;
     if (_shouldCacheStatements && !_cachedStatements) {

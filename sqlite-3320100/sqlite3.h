@@ -195,7 +195,7 @@ SQLITE_API const char *sqlite3_compileoption_get(int N);
 #endif
 
 /*
-** CAPI3REF: Test To See If The Library Is Threadsafe
+** CAPI3REF: 测试库是否是线程安全的
 **
 ** ^The sqlite3_threadsafe() function returns zero if and only if
 ** SQLite was compiled with mutexing code omitted due to the
@@ -233,18 +233,12 @@ SQLITE_API const char *sqlite3_compileoption_get(int N);
 SQLITE_API int sqlite3_threadsafe(void);
 
 /*
-** CAPI3REF: Database Connection Handle
-** KEYWORDS: {database connection} {database connections}
+** CAPI3REF: 数据库连接 Handle
+** 每个打开的SQLite数据库都由一个指向结构 sqlite3 实例的指针表示；可以将sqlite3指针看作一个对象。
 **
-** Each open SQLite database is represented by a pointer to an instance of
-** the opaque structure named "sqlite3".  It is useful to think of an sqlite3
-** pointer as an object.  The [sqlite3_open()], [sqlite3_open16()], and
-** [sqlite3_open_v2()] interfaces are its constructors, and [sqlite3_close()]
-** and [sqlite3_close_v2()] are its destructors.  There are many other
-** interfaces (such as
-** [sqlite3_prepare_v2()], [sqlite3_create_function()], and
-** [sqlite3_busy_timeout()] to name but three) that are methods on an
-** sqlite3 object.
+** 构造函数 ： sqlite3_open(), sqlite3_open16(), 和 sqlite3_open_v2()；
+** 析构函数 ： sqlite3_close() 和 sqlite3_close_v2() ；
+** sqlite3对象还有许多其他函数如 ： sqlite3_prepare_v2()、sqlite3_create_function() 和 sqlite3_busy_timeout()
 */
 typedef struct sqlite3 sqlite3;
 
@@ -289,52 +283,23 @@ typedef sqlite_uint64 sqlite3_uint64;
 # define double sqlite3_int64
 #endif
 
-/*
-** CAPI3REF: Closing A Database Connection
-** DESTRUCTOR: sqlite3
-**
-** ^The sqlite3_close() and sqlite3_close_v2() routines are destructors
-** for the [sqlite3] object.
-** ^Calls to sqlite3_close() and sqlite3_close_v2() return [SQLITE_OK] if
-** the [sqlite3] object is successfully destroyed and all associated
-** resources are deallocated.
-**
-** Ideally, applications should [sqlite3_finalize | finalize] all
-** [prepared statements], [sqlite3_blob_close | close] all [BLOB handles], and 
-** [sqlite3_backup_finish | finish] all [sqlite3_backup] objects associated
-** with the [sqlite3] object prior to attempting to close the object.
-** ^If the database connection is associated with unfinalized prepared
-** statements, BLOB handlers, and/or unfinished sqlite3_backup objects then
-** sqlite3_close() will leave the database connection open and return
-** [SQLITE_BUSY]. ^If sqlite3_close_v2() is called with unfinalized prepared
-** statements, unclosed BLOB handlers, and/or unfinished sqlite3_backups,
-** it returns [SQLITE_OK] regardless, but instead of deallocating the database
-** connection immediately, it marks the database connection as an unusable
-** "zombie" and makes arrangements to automatically deallocate the database
-** connection after all prepared statements are finalized, all BLOB handles
-** are closed, and all backups have finished. The sqlite3_close_v2() interface
-** is intended for use with host languages that are garbage collected, and
-** where the order in which destructors are called is arbitrary.
-**
-** ^If an [sqlite3] object is destroyed while a transaction is open,
-** the transaction is automatically rolled back.
-**
-** The C parameter to [sqlite3_close(C)] and [sqlite3_close_v2(C)]
-** must be either a NULL
-** pointer or an [sqlite3] object pointer obtained
-** from [sqlite3_open()], [sqlite3_open16()], or
-** [sqlite3_open_v2()], and not previously closed.
-** ^Calling sqlite3_close() or sqlite3_close_v2() with a NULL pointer
-** argument is a harmless no-op.
-*/
+/** 是 sqlite3 的析构函数 ：关闭数据库连接
+ *
+ * @param sqlite3* 只能是没有关闭的 sqlite3 对象 或者 NULL， 但 NULL 没有任何意义；
+ * @return 如果 sqlite3 对象被成功销毁，并且所有相关资源被回收，返回 SQLITE_OK ；
+ *
+ * @note 如果 sqlite3 对象在事务打开时被销毁，事务将自动回滚；
+ * @note 理想情况下，应用程序应该由 sqlite3_finalize() 释放 sqlite3_stmt ；sqlite3_blob_close() 关闭 BLOB句柄，以及 sqlite3_backup_finish() 完成所有与 sqlite3_backup 对象关联的 sqlite3_backup对象，然后再尝试关闭该 sqlite3 对象。
+ * @note 如果存在未释放的 sqlite3_stmt 、未关闭的 BLOB handlers、或未完成的 sqlite3_backup 对象：
+ *     那么调用 sqlite3_close() 将保持数据库连接打开并返回 SQLITE_BUSY ；
+ *     那么调用 sqlite3_close_v2() 将返回 SQLITE_OK 但不会立即释放数据库连接 ，此时sqlite3 对象被标记为不可用的僵尸对象，只有上述工作都完毕，才会释放 sqlite3 对象！
+ */
 SQLITE_API int sqlite3_close(sqlite3*);
 SQLITE_API int sqlite3_close_v2(sqlite3*);
 
-/*
-** The type for a callback function.
-** This is legacy and deprecated.  It is included for historical
-** compatibility and is not documented.
-*/
+/** 回调函数（被弃用）
+ * 它是为了历史兼容性而包含的，没有文档记录。
+ */
 typedef int (*sqlite3_callback)(void*,int,char**, char**);
 
 /*
@@ -407,68 +372,43 @@ SQLITE_API int sqlite3_exec(
   char **errmsg                              /* Error msg written here */
 );
 
-/*
-** CAPI3REF: Result Codes
-** KEYWORDS: {result code definitions}
-**
-** Many SQLite functions return an integer result code from the set shown
-** here in order to indicate success or failure.
-**
-** New error codes may be added in future versions of SQLite.
-**
-** See also: [extended result code definitions]
-*/
-#define SQLITE_OK           0   /* Successful result */
-/* beginning-of-error-codes */
-#define SQLITE_ERROR        1   /* Generic error */
-#define SQLITE_INTERNAL     2   /* Internal logic error in SQLite */
-#define SQLITE_PERM         3   /* Access permission denied */
-#define SQLITE_ABORT        4   /* Callback routine requested an abort */
-#define SQLITE_BUSY         5   /* The database file is locked */
-#define SQLITE_LOCKED       6   /* A table in the database is locked */
-#define SQLITE_NOMEM        7   /* A malloc() failed */
-#define SQLITE_READONLY     8   /* Attempt to write a readonly database */
-#define SQLITE_INTERRUPT    9   /* Operation terminated by sqlite3_interrupt()*/
-#define SQLITE_IOERR       10   /* Some kind of disk I/O error occurred */
-#define SQLITE_CORRUPT     11   /* The database disk image is malformed */
-#define SQLITE_NOTFOUND    12   /* Unknown opcode in sqlite3_file_control() */
-#define SQLITE_FULL        13   /* Insertion failed because database is full */
-#define SQLITE_CANTOPEN    14   /* Unable to open the database file */
-#define SQLITE_PROTOCOL    15   /* Database lock protocol error */
-#define SQLITE_EMPTY       16   /* Internal use only */
-#define SQLITE_SCHEMA      17   /* The database schema changed */
-#define SQLITE_TOOBIG      18   /* String or BLOB exceeds size limit */
-#define SQLITE_CONSTRAINT  19   /* Abort due to constraint violation */
-#define SQLITE_MISMATCH    20   /* Data type mismatch */
-#define SQLITE_MISUSE      21   /* Library used incorrectly */
-#define SQLITE_NOLFS       22   /* Uses OS features not supported on host */
-#define SQLITE_AUTH        23   /* Authorization denied */
-#define SQLITE_FORMAT      24   /* Not used */
-#define SQLITE_RANGE       25   /* 2nd parameter to sqlite3_bind out of range */
-#define SQLITE_NOTADB      26   /* File opened that is not a database file */
-#define SQLITE_NOTICE      27   /* Notifications from sqlite3_log() */
-#define SQLITE_WARNING     28   /* Warnings from sqlite3_log() */
-#define SQLITE_ROW         100  /* sqlite3_step() has another row ready */
-#define SQLITE_DONE        101  /* sqlite3_step() has finished executing */
-/* end-of-error-codes */
+/** SQLite函数返回结果码定义 */
 
-/*
-** CAPI3REF: Extended Result Codes
-** KEYWORDS: {extended result code definitions}
-**
-** In its default configuration, SQLite API routines return one of 30 integer
-** [result codes].  However, experience has shown that many of
-** these result codes are too coarse-grained.  They do not provide as
-** much information about problems as programmers might like.  In an effort to
-** address this, newer versions of SQLite (version 3.3.8 [dateof:3.3.8]
-** and later) include
-** support for additional result codes that provide more detailed information
-** about errors. These [extended result codes] are enabled or disabled
-** on a per database connection basis using the
-** [sqlite3_extended_result_codes()] API.  Or, the extended code for
-** the most recent error can be obtained using
-** [sqlite3_extended_errcode()].
-*/
+#define SQLITE_OK           0   /* 成功的结果 */
+/* 错误码 */
+#define SQLITE_ERROR        1   /* 通用错误 */
+#define SQLITE_INTERNAL     2   /* SQLite中的内部逻辑错误 */
+#define SQLITE_PERM         3   /* 没有权限访问 */
+#define SQLITE_ABORT        4   /* 回调请求中止 */
+#define SQLITE_BUSY         5   /* 数据库文件被锁定 */
+#define SQLITE_LOCKED       6   /* 数据库中的表被锁定 */
+#define SQLITE_NOMEM        7   /* malloc()失败 */
+#define SQLITE_READONLY     8   /* 尝试编写一个只有读取权限的数据库 */
+#define SQLITE_INTERRUPT    9   /* 被 sqlite3_interrupt() 终止操作*/
+#define SQLITE_IOERR       10   /* 一些磁盘I/O错误 */
+#define SQLITE_CORRUPT     11   /* 数据库磁盘映像格式错误 */
+#define SQLITE_NOTFOUND    12   /* sqlite3_file_control() 中的未知错误 */
+#define SQLITE_FULL        13   /* 插入失败，因为数据库已满 */
+#define SQLITE_CANTOPEN    14   /* 无法打开数据库文件 */
+#define SQLITE_PROTOCOL    15   /* 数据库 lock 协议错误 */
+#define SQLITE_EMPTY       16   /* 仅限内部使用 */
+#define SQLITE_SCHEMA      17   /* 数据库 schema 改变 */
+#define SQLITE_TOOBIG      18   /* 字符串或BLOB超出大小限制 */
+#define SQLITE_CONSTRAINT  19   /* 因违反约束而中止 */
+#define SQLITE_MISMATCH    20   /* 数据类型不匹配 */
+#define SQLITE_MISUSE      21   /* 库使用不当 */
+#define SQLITE_NOLFS       22   /* 系统不支持 */
+#define SQLITE_AUTH        23   /* 授权被拒 */
+#define SQLITE_FORMAT      24   /* Not used */
+#define SQLITE_RANGE       25   /* sqlite3_bind 的第二个参数超出范围 */
+#define SQLITE_NOTADB      26   /* 打开的文件不是数据库文件 */
+#define SQLITE_NOTICE      27   /* sqlite3_log() 通知 */
+#define SQLITE_WARNING     28   /* sqlite3_log() 警告 */
+#define SQLITE_ROW         100  /* sqlite3_step() 执行另一行 */
+#define SQLITE_DONE        101  /* sqlite3_step() 完成执行 */
+
+
+// 扩展的 SQLite函数返回结果码定义
 #define SQLITE_ERROR_MISSING_COLLSEQ   (SQLITE_ERROR | (1<<8))
 #define SQLITE_ERROR_RETRY             (SQLITE_ERROR | (2<<8))
 #define SQLITE_ERROR_SNAPSHOT          (SQLITE_ERROR | (3<<8))
@@ -543,13 +483,7 @@ SQLITE_API int sqlite3_exec(
 #define SQLITE_OK_LOAD_PERMANENTLY     (SQLITE_OK | (1<<8))
 #define SQLITE_OK_SYMLINK              (SQLITE_OK | (2<<8))
 
-/*
-** CAPI3REF: Flags For File Open Operations
-**
-** These bit values are intended for use in the
-** 3rd parameter to the [sqlite3_open_v2()] interface and
-** in the 4th parameter to the [sqlite3_vfs.xOpen] method.
-*/
+/** sqlite3_open_v2() 函数的 Flags */
 #define SQLITE_OPEN_READONLY         0x00000001  /* Ok for sqlite3_open_v2() */
 #define SQLITE_OPEN_READWRITE        0x00000002  /* Ok for sqlite3_open_v2() */
 #define SQLITE_OPEN_CREATE           0x00000004  /* Ok for sqlite3_open_v2() */
@@ -1544,37 +1478,15 @@ SQLITE_API int sqlite3_shutdown(void);
 SQLITE_API int sqlite3_os_init(void);
 SQLITE_API int sqlite3_os_end(void);
 
-/*
-** CAPI3REF: Configuring The SQLite Library
-**
-** The sqlite3_config() interface is used to make global configuration
-** changes to SQLite in order to tune SQLite to the specific needs of
-** the application.  The default configuration is recommended for most
-** applications and so this routine is usually not necessary.  It is
-** provided to support rare applications with unusual needs.
-**
-** <b>The sqlite3_config() interface is not threadsafe. The application
-** must ensure that no other SQLite interfaces are invoked by other
-** threads while sqlite3_config() is running.</b>
-**
-** The sqlite3_config() interface
-** may only be invoked prior to library initialization using
-** [sqlite3_initialize()] or after shutdown by [sqlite3_shutdown()].
-** ^If sqlite3_config() is called after [sqlite3_initialize()] and before
-** [sqlite3_shutdown()] then it will return SQLITE_MISUSE.
-** Note, however, that ^sqlite3_config() can be called as part of the
-** implementation of an application-defined [sqlite3_os_init()].
-**
-** The first argument to sqlite3_config() is an integer
-** [configuration option] that determines
-** what property of SQLite is to be configured.  Subsequent arguments
-** vary depending on the [configuration option]
-** in the first argument.
-**
-** ^When a configuration option is set, sqlite3_config() returns [SQLITE_OK].
-** ^If the option is unknown or SQLite is unable to set the option
-** then this routine returns a non-zero [error code].
-*/
+/** 配置 SQLite 库
+ * @param 第一个参数是配置选项，它决定要配置SQLite的哪个属性；后续参数取决于第一个参数中的[configuration option]。
+ * @return 设置成功返回SQLITE_OK ，失败返会非零错误码；
+ *
+ * 该函数更改 SQLite 全局配置，以便将SQLite调优到应用程序的特定需求；大多数程序都使用默认配置不需要这个函数。
+ * 该函数不是线程安全的，使用时，应用程序必须确保其它线程不会调用其它 SQLite 函数。
+ *
+ * 该函数只能在库使用 sqlite3_initialize() 初始化之前、或者使用 sqlite3_shutdown()关闭之后调用；如果在 sqlite3_initialize() 之后和 sqlite3_shutdown() 之前调用，那么它将返回错误码SQLITE_MISUSE。
+ */
 SQLITE_API int sqlite3_config(int, ...);
 
 /*
@@ -2354,75 +2266,24 @@ struct sqlite3_mem_methods {
 */
 SQLITE_API int sqlite3_extended_result_codes(sqlite3*, int onoff);
 
-/*
-** CAPI3REF: Last Insert Rowid
-** METHOD: sqlite3
-**
-** ^Each entry in most SQLite tables (except for [WITHOUT ROWID] tables)
-** has a unique 64-bit signed
-** integer key called the [ROWID | "rowid"]. ^The rowid is always available
-** as an undeclared column named ROWID, OID, or _ROWID_ as long as those
-** names are not also used by explicitly declared columns. ^If
-** the table has a column of type [INTEGER PRIMARY KEY] then that column
-** is another alias for the rowid.
-**
-** ^The sqlite3_last_insert_rowid(D) interface usually returns the [rowid] of
-** the most recent successful [INSERT] into a rowid table or [virtual table]
-** on database connection D. ^Inserts into [WITHOUT ROWID] tables are not
-** recorded. ^If no successful [INSERT]s into rowid tables have ever occurred 
-** on the database connection D, then sqlite3_last_insert_rowid(D) returns 
-** zero.
-**
-** As well as being set automatically as rows are inserted into database
-** tables, the value returned by this function may be set explicitly by
-** [sqlite3_set_last_insert_rowid()]
-**
-** Some virtual table implementations may INSERT rows into rowid tables as
-** part of committing a transaction (e.g. to flush data accumulated in memory
-** to disk). In this case subsequent calls to this function return the rowid
-** associated with these internal INSERT operations, which leads to 
-** unintuitive results. Virtual table implementations that do write to rowid
-** tables in this way can avoid this problem by restoring the original 
-** rowid value using [sqlite3_set_last_insert_rowid()] before returning 
-** control to the user.
-**
-** ^(If an [INSERT] occurs within a trigger then this routine will 
-** return the [rowid] of the inserted row as long as the trigger is 
-** running. Once the trigger program ends, the value returned 
-** by this routine reverts to what it was before the trigger was fired.)^
-**
-** ^An [INSERT] that fails due to a constraint violation is not a
-** successful [INSERT] and does not change the value returned by this
-** routine.  ^Thus INSERT OR FAIL, INSERT OR IGNORE, INSERT OR ROLLBACK,
-** and INSERT OR ABORT make no changes to the return value of this
-** routine when their insertion fails.  ^(When INSERT OR REPLACE
-** encounters a constraint violation, it does not fail.  The
-** INSERT continues to completion after deleting rows that caused
-** the constraint problem so INSERT OR REPLACE will always change
-** the return value of this interface.)^
-**
-** ^For the purposes of this routine, an [INSERT] is considered to
-** be successful even if it is subsequently rolled back.
-**
-** This function is accessible to SQL statements via the
-** [last_insert_rowid() SQL function].
-**
-** If a separate thread performs a new [INSERT] on the same
-** database connection while the [sqlite3_last_insert_rowid()]
-** function is running and thus changes the last insert [rowid],
-** then the value returned by [sqlite3_last_insert_rowid()] is
-** unpredictable and might not equal either the old or the new
-** last insert [rowid].
-*/
+/**  最后插入的 Rowid
+ *
+ * @rowid 64位有符号整数键，大部分 SQLite 表中都有个唯一的 rowid（除非显示声明rowid导致它不可用）；rowid列的另一个别名是表中有类型为 INTEGER PRIMARY KEY 的列。
+ * @return 返回最后 INSERT 成功的一行的 rowid；如果没有成功 INSERT 到表中，那么返回零；INSERT 到没有 rowid 的表，则不被记录！
+ * @note 除了 INSERT 时自动设置，该函数返回值也可以由 sqlite3_set_last_insert_rowid() 显式设置；
+ *
+ * 一些 virtual table 可能会将 INSERT 操作作为提交事务的一部分(例如，将内存中积累的数据同步到磁盘)。在这种情况下，调用该函数将返回与这些内部插入操作相关的 rowid，这会导致不直观的结果。在返回给用户之前使用 sqlite3_set_last_insert_rowid() 恢复原始rowid值可以避免这个问题！
+ *
+ * 如果在 trigger 中出现 INSERT，只要 trigger 在运行，该函数就会返回所插入行的 rowid。trigger 运行结束，该函数返回的值就会恢复到trigger 运行之前的值！
+ *
+ * 因违反约束而 INSERT 失败、回滚操作、中止操作，不会改变该函数返回值。
+ *
+ * SQL语句可以通过 last_insert_rowid() 访问该函数；如果在不同线程执行 INSERT，则该函数返回结果是不可预测的。
+ */
 SQLITE_API sqlite3_int64 sqlite3_last_insert_rowid(sqlite3*);
 
-/*
-** CAPI3REF: Set the Last Insert Rowid value.
-** METHOD: sqlite3
-**
-** The sqlite3_set_last_insert_rowid(D, R) method allows the application to
-** set the value returned by calling sqlite3_last_insert_rowid(D) to R 
-** without inserting a row into the database.
+/** 设置最后Insert一行的Rowid
+* 直接改变 Rowid ，而不是不向数据库插入一行。
 */
 SQLITE_API void sqlite3_set_last_insert_rowid(sqlite3*,sqlite3_int64);
 
@@ -4485,9 +4346,12 @@ SQLITE_API int sqlite3_bind_parameter_index(sqlite3_stmt*, const char *zName);
 SQLITE_API int sqlite3_clear_bindings(sqlite3_stmt*);
 
 /*
-** CAPI3REF: Number Of Columns In A Result Set
+** CAPI3REF: 结果集中列的数目
 ** METHOD: sqlite3_stmt
-**
+** 返回[预处理语句]返回的结果集中的列数。
+** 如果返回0，这意味着不返回数据(例如 UPDATE 命令)。
+** 但是，仅仅因为这个例程返回一个正数，并不意味着会返回一行或多行数据。
+** 一个SELECT语句总是有一个正的sqlite3_column_count()，但是根据WHERE子句的约束条件和表的内容，它可能不返回任何行。
 ** ^Return the number of columns in the result set returned by the
 ** [prepared statement]. ^If this routine returns 0, that means the 
 ** [prepared statement] returns no data (for example an [UPDATE]).

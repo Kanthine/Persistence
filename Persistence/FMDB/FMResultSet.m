@@ -57,10 +57,6 @@
     [_statement reset];
     FMDBRelease(_statement);
     _statement = nil;
-    
-    // we don't need this anymore... (i think)
-    //[_parentDB setInUse:NO];
-    
     /** FMResultSet 关闭时，需要FMDatabase从 _openResultSets 移除该结果集 */
     [_parentDB resultSetDidClose:self];
     [self setParentDB:nil];
@@ -167,6 +163,9 @@
             *outErr = [_parentDB lastError];
         }
     }else if (SQLITE_DONE == rc || SQLITE_ROW == rc) {
+         // SQLITE_ROW ： 即 sqlite3_stmt 被执行过了一次
+        //sqlite3_step() 完成执行操作
+        
         // all is well, let's return.
     }else if (SQLITE_ERROR == rc) {
         NSLog(@"Error calling sqlite3_step (%d: %s) rs", rc, sqlite3_errmsg([_parentDB sqliteHandle]));
