@@ -558,7 +558,8 @@ static int FMDBDatabaseBusyHandler(void *f, int count) {
 
 #pragma mark 更新语句信息
 
-/** 获取最后插入一行的主键 id
+/** 获取最后插入一行的主键 rowid
+ * 通过 sqlite3_last_insert_rowid()  函数实现
  * @note 如果数据库连接上从未发生过成功的 INSERT，则返回 0
  */
 - (sqlite_int64)lastInsertRowId {
@@ -573,6 +574,7 @@ static int FMDBDatabaseBusyHandler(void *f, int count) {
 }
 
 /** 前一个 SQL 语句更改了多少行
+ * 通过 sqlite3_changes()  函数实现
  * @note 只计算由INSERT、UPDATE或DELETE语句直接指定的更改的数据库行数
 */
 - (int)changes {
@@ -580,7 +582,6 @@ static int FMDBDatabaseBusyHandler(void *f, int count) {
         [self warnInUse];
         return 0;
     }
-    
     _isExecutingStatement = YES;
     int ret = sqlite3_changes(_db);
     _isExecutingStatement = NO;

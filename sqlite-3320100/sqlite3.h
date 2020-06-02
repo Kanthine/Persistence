@@ -232,14 +232,13 @@ SQLITE_API const char *sqlite3_compileoption_get(int N);
 */
 SQLITE_API int sqlite3_threadsafe(void);
 
-/*
-** CAPI3REF: 数据库连接 Handle
-** 每个打开的SQLite数据库都由一个指向结构 sqlite3 实例的指针表示；可以将sqlite3指针看作一个对象。
-**
-** 构造函数 ： sqlite3_open(), sqlite3_open16(), 和 sqlite3_open_v2()；
-** 析构函数 ： sqlite3_close() 和 sqlite3_close_v2() ；
-** sqlite3对象还有许多其他函数如 ： sqlite3_prepare_v2()、sqlite3_create_function() 和 sqlite3_busy_timeout()
-*/
+/** 数据库连接 Handle
+ * 每个打开的SQLite数据库都由一个指向结构 sqlite3 实例的指针表示；可以将sqlite3指针看作一个对象。
+ *
+ * 构造函数 ： sqlite3_open(), sqlite3_open16(), 和 sqlite3_open_v2()；
+ * 析构函数 ： sqlite3_close() 和 sqlite3_close_v2() ；
+ * sqlite3对象还有许多其他函数如 ： sqlite3_prepare_v2()、sqlite3_create_function() 和 sqlite3_busy_timeout()
+ */
 typedef struct sqlite3 sqlite3;
 
 /*
@@ -286,7 +285,7 @@ typedef sqlite_uint64 sqlite3_uint64;
 /** 是 sqlite3 的析构函数 ：关闭数据库连接
  *
  * @param sqlite3* 只能是没有关闭的 sqlite3 对象 或者 NULL， 但 NULL 没有任何意义；
- * @return 如果 sqlite3 对象被成功销毁，并且所有相关资源被回收，返回 SQLITE_OK ；
+ * @return 如果 sqlite3 对象被成功销毁，并且所有相关资源被释放，返回 SQLITE_OK ；
  *
  * @note 如果 sqlite3 对象在事务打开时被销毁，事务将自动回滚；
  * @note 理想情况下，应用程序应该由 sqlite3_finalize() 释放 sqlite3_stmt ；sqlite3_blob_close() 关闭 BLOB句柄，以及 sqlite3_backup_finish() 完成所有与 sqlite3_backup 对象关联的 sqlite3_backup对象，然后再尝试关闭该 sqlite3 对象。
@@ -613,7 +612,7 @@ SQLITE_API int sqlite3_exec(
 */
 typedef struct sqlite3_file sqlite3_file;
 struct sqlite3_file {
-  const struct sqlite3_io_methods *pMethods;  /* Methods for an open file */
+  const struct sqlite3_io_methods *pMethods;  /* 用于打开文件的方法 */
 };
 
 /*
@@ -2287,136 +2286,41 @@ SQLITE_API sqlite3_int64 sqlite3_last_insert_rowid(sqlite3*);
 */
 SQLITE_API void sqlite3_set_last_insert_rowid(sqlite3*,sqlite3_int64);
 
-/*
-** CAPI3REF: Count The Number Of Rows Modified
-** METHOD: sqlite3
-**
-** ^This function returns the number of rows modified, inserted or
-** deleted by the most recently completed INSERT, UPDATE or DELETE
-** statement on the database connection specified by the only parameter.
-** ^Executing any other type of SQL statement does not modify the value
-** returned by this function.
-**
-** ^Only changes made directly by the INSERT, UPDATE or DELETE statement are
-** considered - auxiliary changes caused by [CREATE TRIGGER | triggers], 
-** [foreign key actions] or [REPLACE] constraint resolution are not counted.
-** 
-** Changes to a view that are intercepted by 
-** [INSTEAD OF trigger | INSTEAD OF triggers] are not counted. ^The value 
-** returned by sqlite3_changes() immediately after an INSERT, UPDATE or 
-** DELETE statement run on a view is always zero. Only changes made to real 
-** tables are counted.
-**
-** Things are more complicated if the sqlite3_changes() function is
-** executed while a trigger program is running. This may happen if the
-** program uses the [changes() SQL function], or if some other callback
-** function invokes sqlite3_changes() directly. Essentially:
-** 
-** <ul>
-**   <li> ^(Before entering a trigger program the value returned by
-**        sqlite3_changes() function is saved. After the trigger program 
-**        has finished, the original value is restored.)^
-** 
-**   <li> ^(Within a trigger program each INSERT, UPDATE and DELETE 
-**        statement sets the value returned by sqlite3_changes() 
-**        upon completion as normal. Of course, this value will not include 
-**        any changes performed by sub-triggers, as the sqlite3_changes() 
-**        value will be saved and restored after each sub-trigger has run.)^
-** </ul>
-** 
-** ^This means that if the changes() SQL function (or similar) is used
-** by the first INSERT, UPDATE or DELETE statement within a trigger, it 
-** returns the value as set when the calling statement began executing.
-** ^If it is used by the second or subsequent such statement within a trigger 
-** program, the value returned reflects the number of rows modified by the 
-** previous INSERT, UPDATE or DELETE statement within the same trigger.
-**
-** If a separate thread makes changes on the same database connection
-** while [sqlite3_changes()] is running then the value returned
-** is unpredictable and not meaningful.
-**
-** See also:
-** <ul>
-** <li> the [sqlite3_total_changes()] interface
-** <li> the [count_changes pragma]
-** <li> the [changes() SQL function]
-** <li> the [data_version pragma]
-** </ul>
-*/
+/** 前一个 SQL 语句更改了多少行
+ * @return 返回指定数据库上最近完成的INSERT、UPDATE或DELETE命令的行数；仅仅针对表，对于 view 不做计算！
+ *         执行任何其他类型的SQL语句，如 CREATE、REPLACE、triggers  都不会修改这个函数返回的值。
+ *
+ *
+ * 如果在 trigger 运行时执行sqlite3_changes()函数，事情就会变得更加复杂。如果程序使用[changes() SQL函数]，或者其他一些回调函数直接调用sqlite3_changes()，就会发生这种情况：
+ *   <li> 在输入trigger之前，将保存sqlite3_changes()函数返回的值。trigger 程序完成后，恢复原始值
+ *   <li> 在 trigger 程序中，每条INSERT、UPDATE和DELETE语句都会设置sqlite3_changes()在正常情况下完成时返回的值。
+ *         当然，这个值不包括由子触发器执行的任何更改，因为sqlite3_changes()值将在每个子触发器运行后保存并恢复
+ *
+ * 这意味着，如果 trigger 中的第一个INSERT、UPDATE或DELETE语句使用了changes() 函数，它将返回调用语句开始执行时设置的值。如果 trigger 中的第二个或后续语句使用它，则返回的值反映同一 trigger 中前一个INSERT、UPDATE或DELETE语句修改的行数。
+ *
+ * @note  该函数不是线程安全的，如果在调用该函数的同时，对数据库作了修改，那么返回值不可预测！
+ */
 SQLITE_API int sqlite3_changes(sqlite3*);
 
-/*
-** CAPI3REF: Total Number Of Rows Modified
-** METHOD: sqlite3
-**
-** ^This function returns the total number of rows inserted, modified or
-** deleted by all [INSERT], [UPDATE] or [DELETE] statements completed
-** since the database connection was opened, including those executed as
-** part of trigger programs. ^Executing any other type of SQL statement
-** does not affect the value returned by sqlite3_total_changes().
-** 
-** ^Changes made as part of [foreign key actions] are included in the
-** count, but those made as part of REPLACE constraint resolution are
-** not. ^Changes to a view that are intercepted by INSTEAD OF triggers 
-** are not counted.
-**
-** The [sqlite3_total_changes(D)] interface only reports the number
-** of rows that changed due to SQL statement run against database
-** connection D.  Any changes by other database connections are ignored.
-** To detect changes against a database file from other database
-** connections use the [PRAGMA data_version] command or the
-** [SQLITE_FCNTL_DATA_VERSION] [file control].
-** 
-** If a separate thread makes changes on the same database connection
-** while [sqlite3_total_changes()] is running then the value
-** returned is unpredictable and not meaningful.
-**
-** See also:
-** <ul>
-** <li> the [sqlite3_changes()] interface
-** <li> the [count_changes pragma]
-** <li> the [changes() SQL function]
-** <li> the [data_version pragma]
-** <li> the [SQLITE_FCNTL_DATA_VERSION] [file control]
-** </ul>
-*/
+/** 修改的总行数
+ * @return 返回自打开数据库以来已经完成的所有 INSERT、UPDATE 或 DELETE 命令的总行数，包括作为 trigger 程序的执行的一部分行数。
+ *         执行任何其他类型的SQL语句都不会影响该函数返回值。
+ *         作为外键操作的部分更改包括在计数中，但作为替换约束解析的部分更改不包括在内。
+ *
+ * @note  该函数不是线程安全的，如果在调用该函数的同时，对数据库作了修改，那么返回值不可预测！
+ */
 SQLITE_API int sqlite3_total_changes(sqlite3*);
 
-/*
-** CAPI3REF: Interrupt A Long-Running Query
-** METHOD: sqlite3
-**
-** ^This function causes any pending database operation to abort and
-** return at its earliest opportunity. This routine is typically
-** called in response to a user action such as pressing "Cancel"
-** or Ctrl-C where the user wants a long query operation to halt
-** immediately.
-**
-** ^It is safe to call this routine from a thread different from the
-** thread that is currently running the database operation.  But it
-** is not safe to call this routine with a [database connection] that
-** is closed or might close before sqlite3_interrupt() returns.
-**
-** ^If an SQL operation is very nearly finished at the time when
-** sqlite3_interrupt() is called, then it might not have an opportunity
-** to be interrupted and might continue to completion.
-**
-** ^An SQL operation that is interrupted will return [SQLITE_INTERRUPT].
-** ^If the interrupted SQL operation is an INSERT, UPDATE, or DELETE
-** that is inside an explicit transaction, then the entire transaction
-** will be rolled back automatically.
-**
-** ^The sqlite3_interrupt(D) call is in effect until all currently running
-** SQL statements on [database connection] D complete.  ^Any new SQL statements
-** that are started after the sqlite3_interrupt() call and before the 
-** running statement count reaches zero are interrupted as if they had been
-** running prior to the sqlite3_interrupt() call.  ^New SQL statements
-** that are started after the running statement count reaches zero are
-** not effected by the sqlite3_interrupt().
-** ^A call to sqlite3_interrupt(D) that occurs when there are no running
-** SQL statements is a no-op and has no effect on SQL statements
-** that are started after the sqlite3_interrupt() call returns.
-*/
+
+/** 中断当前正在执行的 Sql 语句，
+ * @note 那些被中断的SQL操作将返回错误码 SQLITE_INTERRUPT
+ * @note 如果没有正在执行的 Sql 语句，调用该函数是无意义的；调用该函数之后，再次执行Sql 语句不受任何影响！
+ * @note 如果中断的SQL操作是显式事务中的 INSERT、UPDATE、 DELETE操作，那么整个事务将自动回滚。
+ * @note 该函数是线程安全的，但需要确保在调用该函数值前数据库是打开的！如果SQL语句在调用sqlite3_interrupt()时同时完成，那么它可能没有机会被中断将继续完成。
+ *
+ * 在sqlite3_interrupt()调用之后以及运行的语句计数达到零之前启动的任何新SQL语句都将被中断，就好像它们在sqlite3_interrupt()调用之前已经运行过一样。
+ * 在运行的语句计数达到零之后启动的新SQL语句不受sqlite3_interrupt()的影响。
+ */
 SQLITE_API void sqlite3_interrupt(sqlite3*);
 
 /*
@@ -2455,88 +2359,37 @@ SQLITE_API void sqlite3_interrupt(sqlite3*);
 SQLITE_API int sqlite3_complete(const char *sql);
 SQLITE_API int sqlite3_complete16(const void *sql);
 
-/*
-** CAPI3REF: Register A Callback To Handle SQLITE_BUSY Errors
-** KEYWORDS: {busy-handler callback} {busy handler}
-** METHOD: sqlite3
-**
-** ^The sqlite3_busy_handler(D,X,P) routine sets a callback function X
-** that might be invoked with argument P whenever
-** an attempt is made to access a database table associated with
-** [database connection] D when another thread
-** or process has the table locked.
-** The sqlite3_busy_handler() interface is used to implement
-** [sqlite3_busy_timeout()] and [PRAGMA busy_timeout].
-**
-** ^If the busy callback is NULL, then [SQLITE_BUSY]
-** is returned immediately upon encountering the lock.  ^If the busy callback
-** is not NULL, then the callback might be invoked with two arguments.
-**
-** ^The first argument to the busy handler is a copy of the void* pointer which
-** is the third argument to sqlite3_busy_handler().  ^The second argument to
-** the busy handler callback is the number of times that the busy handler has
-** been invoked previously for the same locking event.  ^If the
-** busy callback returns 0, then no additional attempts are made to
-** access the database and [SQLITE_BUSY] is returned
-** to the application.
-** ^If the callback returns non-zero, then another attempt
-** is made to access the database and the cycle repeats.
-**
-** The presence of a busy handler does not guarantee that it will be invoked
-** when there is lock contention. ^If SQLite determines that invoking the busy
-** handler could result in a deadlock, it will go ahead and return [SQLITE_BUSY]
-** to the application instead of invoking the 
-** busy handler.
-** Consider a scenario where one process is holding a read lock that
-** it is trying to promote to a reserved lock and
-** a second process is holding a reserved lock that it is trying
-** to promote to an exclusive lock.  The first process cannot proceed
-** because it is blocked by the second and the second process cannot
-** proceed because it is blocked by the first.  If both processes
-** invoke the busy handlers, neither will make any progress.  Therefore,
-** SQLite returns [SQLITE_BUSY] for the first process, hoping that this
-** will induce the first process to release its read lock and allow
-** the second process to proceed.
-**
-** ^The default busy callback is NULL.
-**
-** ^(There can only be a single busy handler defined for each
-** [database connection].  Setting a new busy handler clears any
-** previously set handler.)^  ^Note that calling [sqlite3_busy_timeout()]
-** or evaluating [PRAGMA busy_timeout=N] will change the
-** busy handler and thus clear any previously set busy handler.
-**
-** The busy callback should not take any actions which modify the
-** database connection that invoked the busy handler.  In other words,
-** the busy handler is not reentrant.  Any such actions
-** result in undefined behavior.
-** 
-** A busy handler must not close the database connection
-** or [prepared statement] that invoked the busy handler.
-*/
+/** 注册一个回调函数来处理 SQLITE_BUSY 错误
+ *
+ * @param sqlite3* 指定的数据库
+ * @param int(*)(void*,int) 回调函数，默认为NULL，意味着在遇到锁事件时给应用程序立即返回 SQLITE_BUSY；
+ *                          如果注册了回调函数，则在遇到锁事件时可能调用回调函数，也可能返回 SQLITE_BUSY；
+ * 如果SQLite确定调用注册的回调函数会导致死锁，那么SQLite 将继续执行并将 SQLITE_BUSY 返回给应用程序，而非调用回调函数！
+ *
+ * 对于回调函数的参数与返回值：
+ *   第一个参数是 sqlite3_busy_handler() 的第三个参数的拷贝副本，
+ *   第二个参数 int 代表本次锁事件当中，该回调函数被调用次数；
+ *   返回值：如果返回为0，不会再次访问数据库，将 SQLITE_BUSY 返回给应用程序；
+ *         如果返回非0，将再次尝试访问数据库，重复这个循环！
+ *
+ *
+ * @note 每个数据库仅能使用 sqlite3_busy_handler() 注册一个回调函数！再次调用  sqlite3_busy_handler()，则之前的回调函数会失效！可以调用 sqlite3_busy_timeout() 更改回调函数，从而清除以前设置的任何回调函数
+ * @note 回调函数不能关闭数据库或预处理语句；
+ *
+ * @abstract 程序运行过程中，如果有其它线程在读写数据库，那么注册的回调函数会不断被调用，直到其他线程释放锁；获得锁之后，不会再调用回调函数，从而向下执行，进行数据库操作：
+ * @case 考虑这样一种情况:一个线程持有一个读锁，它试图将这个读锁提升为一个保留锁，而另一个线程持有一个保留锁，它试图将这个保留锁提升为一个独占锁。
+ *   第一个线程不能继续，因为它被第二个线程阻止了;第二个线程不能继续，因为它被第一个线程阻止了。
+ *   如果两个线程都调用该函数，那么它们都不会取得任何进展。
+ *   因此，SQLite为第一个线程返回 SQLITE_BUSY，希望这会导致第一个线程释放其读锁，并允许第二个线程继续。
+ */
 SQLITE_API int sqlite3_busy_handler(sqlite3*,int(*)(void*,int),void*);
 
-/*
-** CAPI3REF: Set A Busy Timeout
-** METHOD: sqlite3
-**
-** ^This routine sets a [sqlite3_busy_handler | busy handler] that sleeps
-** for a specified amount of time when a table is locked.  ^The handler
-** will sleep multiple times until at least "ms" milliseconds of sleeping
-** have accumulated.  ^After at least "ms" milliseconds of sleeping,
-** the handler returns 0 which causes [sqlite3_step()] to return
-** [SQLITE_BUSY].
-**
-** ^Calling this routine with an argument less than or equal to zero
-** turns off all busy handlers.
-**
-** ^(There can only be a single busy handler for a particular
-** [database connection] at any given moment.  If another busy handler
-** was defined  (using [sqlite3_busy_handler()]) prior to calling
-** this routine, that other busy handler is cleared.)^
-**
-** See also:  [PRAGMA busy_timeout]
-*/
+/** 设置表被 lock 时 sqlite3_busy_handler() 的休眠时间
+ * @param sqlite3* 指定的数据库
+ * @param ms 休眠多少毫秒； <= 0的时间将使得 sqlite3_busy_handler() 无意义！
+ *
+ * @abstract sqlite3_busy_handler() 将多次休眠，直到积累了 ms 毫秒之后返回 0，并且对应的函数返回 SQLITE_BUSY；
+ */
 SQLITE_API int sqlite3_busy_timeout(sqlite3*, int ms);
 
 /*
@@ -3127,141 +2980,53 @@ SQLITE_API int sqlite3_trace_v2(
 */
 SQLITE_API void sqlite3_progress_handler(sqlite3*, int, int(*)(void*), void*);
 
-/*
-** CAPI3REF: Opening A New Database Connection
-** CONSTRUCTOR: sqlite3
-**
-** ^These routines open an SQLite database file as specified by the 
-** filename argument. ^The filename argument is interpreted as UTF-8 for
-** sqlite3_open() and sqlite3_open_v2() and as UTF-16 in the native byte
-** order for sqlite3_open16(). ^(A [database connection] handle is usually
-** returned in *ppDb, even if an error occurs.  The only exception is that
-** if SQLite is unable to allocate memory to hold the [sqlite3] object,
-** a NULL will be written into *ppDb instead of a pointer to the [sqlite3]
-** object.)^ ^(If the database is opened (and/or created) successfully, then
-** [SQLITE_OK] is returned.  Otherwise an [error code] is returned.)^ ^The
-** [sqlite3_errmsg()] or [sqlite3_errmsg16()] routines can be used to obtain
-** an English language description of the error following a failure of any
-** of the sqlite3_open() routines.
-**
-** ^The default encoding will be UTF-8 for databases created using
-** sqlite3_open() or sqlite3_open_v2().  ^The default encoding for databases
-** created using sqlite3_open16() will be UTF-16 in the native byte order.
-**
-** Whether or not an error occurs when it is opened, resources
-** associated with the [database connection] handle should be released by
-** passing it to [sqlite3_close()] when it is no longer required.
-**
-** The sqlite3_open_v2() interface works like sqlite3_open()
-** except that it accepts two additional parameters for additional control
-** over the new database connection.  ^(The flags parameter to
-** sqlite3_open_v2() must include, at a minimum, one of the following
-** three flag combinations:)^
-**
-** <dl>
-** ^(<dt>[SQLITE_OPEN_READONLY]</dt>
-** <dd>The database is opened in read-only mode.  If the database does not
-** already exist, an error is returned.</dd>)^
-**
-** ^(<dt>[SQLITE_OPEN_READWRITE]</dt>
-** <dd>The database is opened for reading and writing if possible, or reading
-** only if the file is write protected by the operating system.  In either
-** case the database must already exist, otherwise an error is returned.</dd>)^
-**
-** ^(<dt>[SQLITE_OPEN_READWRITE] | [SQLITE_OPEN_CREATE]</dt>
-** <dd>The database is opened for reading and writing, and is created if
-** it does not already exist. This is the behavior that is always used for
-** sqlite3_open() and sqlite3_open16().</dd>)^
-** </dl>
-**
-** In addition to the required flags, the following optional flags are
-** also supported:
-**
-** <dl>
-** ^(<dt>[SQLITE_OPEN_URI]</dt>
-** <dd>The filename can be interpreted as a URI if this flag is set.</dd>)^
-**
-** ^(<dt>[SQLITE_OPEN_MEMORY]</dt>
-** <dd>The database will be opened as an in-memory database.  The database
-** is named by the "filename" argument for the purposes of cache-sharing,
-** if shared cache mode is enabled, but the "filename" is otherwise ignored.
-** </dd>)^
-**
-** ^(<dt>[SQLITE_OPEN_NOMUTEX]</dt>
-** <dd>The new database connection will use the "multi-thread"
-** [threading mode].)^  This means that separate threads are allowed
-** to use SQLite at the same time, as long as each thread is using
-** a different [database connection].
-**
-** ^(<dt>[SQLITE_OPEN_FULLMUTEX]</dt>
-** <dd>The new database connection will use the "serialized"
-** [threading mode].)^  This means the multiple threads can safely
-** attempt to use the same database connection at the same time.
-** (Mutexes will block any actual concurrency, but in this mode
-** there is no harm in trying.)
-**
-** ^(<dt>[SQLITE_OPEN_SHAREDCACHE]</dt>
-** <dd>The database is opened [shared cache] enabled, overriding
-** the default shared cache setting provided by
-** [sqlite3_enable_shared_cache()].)^
-**
-** ^(<dt>[SQLITE_OPEN_PRIVATECACHE]</dt>
-** <dd>The database is opened [shared cache] disabled, overriding
-** the default shared cache setting provided by
-** [sqlite3_enable_shared_cache()].)^
-**
-** [[OPEN_NOFOLLOW]] ^(<dt>[SQLITE_OPEN_NOFOLLOW]</dt>
-** <dd>The database filename is not allowed to be a symbolic link</dd>
-** </dl>)^
-**
-** If the 3rd parameter to sqlite3_open_v2() is not one of the
-** required combinations shown above optionally combined with other
-** [SQLITE_OPEN_READONLY | SQLITE_OPEN_* bits]
-** then the behavior is undefined.
-**
-** ^The fourth parameter to sqlite3_open_v2() is the name of the
-** [sqlite3_vfs] object that defines the operating system interface that
-** the new database connection should use.  ^If the fourth parameter is
-** a NULL pointer then the default [sqlite3_vfs] object is used.
-**
-** ^If the filename is ":memory:", then a private, temporary in-memory database
-** is created for the connection.  ^This in-memory database will vanish when
-** the database connection is closed.  Future versions of SQLite might
-** make use of additional special filenames that begin with the ":" character.
-** It is recommended that when a database filename actually does begin with
-** a ":" character you should prefix the filename with a pathname such as
-** "./" to avoid ambiguity.
-**
-** ^If the filename is an empty string, then a private, temporary
-** on-disk database will be created.  ^This private database will be
-** automatically deleted as soon as the database connection is closed.
-**
-** [[URI filenames in sqlite3_open()]] <h3>URI Filenames</h3>
-**
-** ^If [URI filename] interpretation is enabled, and the filename argument
-** begins with "file:", then the filename is interpreted as a URI. ^URI
-** filename interpretation is enabled if the [SQLITE_OPEN_URI] flag is
-** set in the third argument to sqlite3_open_v2(), or if it has
-** been enabled globally using the [SQLITE_CONFIG_URI] option with the
-** [sqlite3_config()] method or by the [SQLITE_USE_URI] compile-time option.
-** URI filename interpretation is turned off
-** by default, but future releases of SQLite might enable URI filename
-** interpretation by default.  See "[URI filenames]" for additional
-** information.
-**
-** URI filenames are parsed according to RFC 3986. ^If the URI contains an
-** authority, then it must be either an empty string or the string 
-** "localhost". ^If the authority is not an empty string or "localhost", an 
-** error is returned to the caller. ^The fragment component of a URI, if 
-** present, is ignored.
-**
-** ^SQLite uses the path component of the URI as the name of the disk file
-** which contains the database. ^If the path begins with a '/' character, 
-** then it is interpreted as an absolute path. ^If the path does not begin 
-** with a '/' (meaning that the authority section is omitted from the URI)
-** then the path is interpreted as a relative path. 
-** ^(On windows, the first component of an absolute path 
-** is a drive specification (e.g. "C:").)^
+/**  打开一个新的数据库连接
+ * 打开一个由参数 filename 指定的SQLite数据库文件。
+ * 对于 sqlite3_open() 和 sqlite3_open_v2()，参数 filename 编码为UTF-8；对于sqlite3_open16()参数 filename 编码为 UTF-16；
+ *
+ * 数据库句柄通常在 *ppDb 中返回，即使出现错误也是如此；除非SQLite无法分配内存，将NULL写入*ppDb！
+ * 如果数据库打开或创建成功，则返回 SQLITE_OK ；否则返回错误码。
+ * 失败后调用 sqlite3_errmsg() 或 sqlite3_errmsg16() 函数可用于获取错误描述。
+ *
+ * 打开失败时需要调用 sqlite3_close()将与 *ppDb  相关联的资源释放！
+ *
+ * sqlite3_open_v2() 类似于 sqlite3_open()，但它多了两个参数 flags 和 zVfs，用于对数据库进行控制：
+ * 参数 zVfs 是新数据库连接使用的操作系统接口的 sqlite3_vfs对象的名称；可以为 NULL，表示默认的 sqlite3_vfs 对象。
+ *
+ * 其中 flags 参数必须至少包含以下三种标志组合之一:
+ * <dl>
+ *  SQLITE_OPEN_READONLY 数据库以只读模式打开；如果数据库不存在，将返回一个错误。
+ *  SQLITE_OPEN_READWRITE 如果可能，数据库以读写模式打开；如果数据库不存在，将返回一个错误。
+ *  SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE 类似于 sqlite3_open() 或  sqlite3_open16()，打开数据库进行读写操作，如果数据库不存在则创建。
+ * </dl>
+ *
+ * 除了必要的 flags，也支持以下的flags:
+ * <dl>
+ *  SQLITE_OPEN_URI 如果设置了这个 flag，文件名可以解释为 URI。
+ *  SQLITE_OPEN_MEMORY 数据库将作为 in-memory 数据库打开；如果启用了共享缓存模式，则使用参数 filename  命名数据库，以实现缓存共享。
+ *  SQLITE_OPEN_NOMUTEX 数据库将使用多线程模式：只要每个线程使用不同的 数据库连接，就允许不同的线程同时使用SQLite；
+ *  SQLITE_OPEN_FULLMUTEX 数据库将使用串行模式：多个线程可以在同时安全地访问同一个数据库；
+ *  SQLITE_OPEN_SHAREDCACHE 数据库被打开，共享缓存启用，覆盖 sqlite3_enable_shared_cache() 提供的默认共享缓存设置。
+ *  SQLITE_OPEN_PRIVATECACHE 数据库被打开，共享缓存禁用，覆盖 sqlite3_enable_shared_cache()提供的默认共享缓存设置。
+ *  SQLITE_OPEN_NOFOLLOW 数据库文件名不允许是一个符号链接。
+ * </dl>)^
+ *
+ *  如果 flags 参数不是上面所示的，则行为是未定义的。
+ *
+ * 参数 filename ：
+ *      如果是 ":memory:"，那么将创建一个私有的临时内存数据库；当数据库关闭时，从内存中移除该数据库。
+ *      如果是一个空字符串，那么将创建一个私有的临时磁盘数据库；当数据库关闭时，从磁盘中删除该数据库。
+ *      如果是 URI
+ *
+ * <>sqlite3_open() 函数的 filename 如果是 URI 格式<>
+ *   如果使用了 URI 格式的 filename，并且参数 filename 以 'file:' 开头，那么该 filename 将被解释为URI。
+ *   如果在sqlite3_open_v2()的参数 flags 设置 SQLITE_CONFIG_URI 标志，或者使用 sqlite3_config() 函数全局启用了 SQLITE_CONFIG_URI 选项，或者通过 SQLITE_USE_URI 编译时选项启用了 sqlite_config() ，则启用了URI文件名解释。
+ *   URI 格式文件名在默认情况下是关闭的，但是SQLite的未来版本可能会在默认情况下启用URI格式文件名。
+ *
+ *   根据 RFC 3986 解析 URI 格式文件名；如果URI包含一个authority，那么它必须是一个空字符串或者字符串“localhost”，否则返回错误；
+ *
+ *  SQLite 使用 URI 的路径作为数据库的磁盘文件名称：如果路径以一个 '/' 字符开头，那么它被解释为一个绝对路径；否则是一个相对路径
+ *
 **
 ** [[core URI query parameters]]
 ** The query component of a URI may contain parameters that are interpreted
@@ -3359,27 +3124,13 @@ SQLITE_API void sqlite3_progress_handler(sqlite3*, int, int(*)(void*), void*);
 **          An error. "readonly" is not a valid option for the "mode" parameter.
 ** </table>
 **
-** ^URI hexadecimal escape sequences (%HH) are supported within the path and
-** query components of a URI. A hexadecimal escape sequence consists of a
-** percent sign - "%" - followed by exactly two hexadecimal digits 
-** specifying an octet value. ^Before the path or query components of a
-** URI filename are interpreted, they are encoded using UTF-8 and all 
-** hexadecimal escape sequences replaced by a single byte containing the
-** corresponding octet. If this process generates an invalid UTF-8 encoding,
-** the results are undefined.
-**
-** <b>Note to Windows users:</b>  The encoding used for the filename argument
-** of sqlite3_open() and sqlite3_open_v2() must be UTF-8, not whatever
-** codepage is currently defined.  Filenames containing international
-** characters must be converted to UTF-8 prior to passing them into
-** sqlite3_open() or sqlite3_open_v2().
-**
-** <b>Note to Windows Runtime users:</b>  The temporary directory must be set
-** prior to calling sqlite3_open() or sqlite3_open_v2().  Otherwise, various
-** features that require the use of temporary files may fail.
-**
-** See also: [sqlite3_temp_directory]
-*/
+ * URI的路径和查询支持 URI 的十六进制转义序列(%HH)：十六进制转义序列由百分号“%”组成，后面紧跟着两个十六进制数字，指定一个八位元值。
+ * 在使用 URI 之前，先使用 UTF-8 编码，并将所有十六进制转义序列替换为包含相应八位字节的单个字节；如果UTF-8编码失败，则结果是未定义的。
+ *
+ * <b> Windows 用户须知: </b>
+ * 用于 sqlite3_open() 和 sqlite3_open_v2() 的参数 filename 的编码必须是UTF-8！
+ * 在调用 sqlite3_open() 或 sqlite3_open_v2() 之前，必须设置临时目录；否则，需要使用临时文件的各种功能可能会失败。
+ */
 SQLITE_API int sqlite3_open(
   const char *filename,   /* Database filename (UTF-8) */
   sqlite3 **ppDb          /* OUT: SQLite db handle */
@@ -3628,29 +3379,16 @@ SQLITE_API const char *sqlite3_errmsg(sqlite3*);
 SQLITE_API const void *sqlite3_errmsg16(sqlite3*);
 SQLITE_API const char *sqlite3_errstr(int);
 
-/*
-** CAPI3REF: Prepared Statement Object
-** KEYWORDS: {prepared statement} {prepared statements}
-**
-** An instance of this object represents a single SQL statement that
-** has been compiled into binary form and is ready to be evaluated.
-**
-** Think of each SQL statement as a separate computer program.  The
-** original SQL text is source code.  A prepared statement object 
-** is the compiled object code.  All SQL must be converted into a
-** prepared statement before it can be run.
-**
-** The life-cycle of a prepared statement object usually goes like this:
-**
-** <ol>
-** <li> Create the prepared statement object using [sqlite3_prepare_v2()].
-** <li> Bind values to [parameters] using the sqlite3_bind_*()
-**      interfaces.
-** <li> Run the SQL by calling [sqlite3_step()] one or more times.
-** <li> Reset the prepared statement using [sqlite3_reset()] then go back
-**      to step 2.  Do this zero or more times.
-** <li> Destroy the object using [sqlite3_finalize()].
-** </ol>
+/** 预处理语句 sqlite3_stmt
+ *
+ * @Abstract sqlite3_stmt 并不是我们所熟悉的 SQL 文本，如果将每个SQL语句看作一个单独的计算机程序，那么原始的 SQL 文本是源代码；sqlite3_stmt 对象是编译后的对象代码，用 Sqlite3 标记记录的内部数据结构以二进制形式存在，可以直接进行计算。
+ *
+ * @LifeCycle 所有 SQL 语句在运行之前都必须转换成预处理语句；预处理语句对象的生命周期通常是这样的:
+ * <1> 使用 sqlite3_prepare_v2() 创建预处理语句
+ * <2> 使用 sqlite3_bind_*() 系列函数将占位值绑定到对应参数
+ * <3> 一次或多次调用 sqlite3_step() 函数运行SQL
+ * <4> 调用 sqlite3_reset() 函数重置预处理语句，然后返回到步骤3；这样可以缓存 sqlite3_stmt 并在使用的时候先重置再使用；
+ * <5> 调用 sqlite3_finalize() 函数销毁对象
 */
 typedef struct sqlite3_stmt sqlite3_stmt;
 
